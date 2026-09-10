@@ -38,13 +38,7 @@ class WhiteNoiseService {
   }
 
   Future<void> init() async {
-    if (_isInitialized) return;
-    try {
-      await _player.setLoopMode(LoopMode.one);
-      _isInitialized = true;
-    } catch (e) {
-      debugPrint('WhiteNoiseService init error: $e');
-    }
+    _isInitialized = true;
   }
 
   /// 播放指定环境音（带 1.0s 平滑淡入）

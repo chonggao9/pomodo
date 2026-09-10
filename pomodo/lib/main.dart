@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/white_noise_service.dart';
@@ -62,6 +63,11 @@ class PomoDoApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: profileProv.themeMode,
             locale: localeProv.currentLocale,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             supportedLocales: const [
               Locale('zh', 'CN'),
               Locale('en', 'US'),

@@ -24,7 +24,7 @@ class AppUpdateInfo {
 }
 
 class UpdateService {
-  static const String currentVersion = '1.0.3';
+  static const String currentVersion = '1.0.4';
   static const String githubRepo = 'chonggao9/pomodo';
   static const String latestReleaseApi = 'https://api.github.com/repos/$githubRepo/releases/latest';
 
