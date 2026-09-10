@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,7 +24,7 @@ class AppUpdateInfo {
 }
 
 class UpdateService {
-  static const String currentVersion = '1.0.0';
+  static const String currentVersion = '1.0.2';
   static const String githubRepo = 'chonggao9/pomodo';
   static const String latestReleaseApi = 'https://api.github.com/repos/$githubRepo/releases/latest';
 
