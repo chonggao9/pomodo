@@ -5,6 +5,7 @@ import '../../core/services/update_service.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/pomodoro_provider.dart';
+import '../../models/category.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -98,6 +99,329 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: const Text('保存修改', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static const List<String> _categoryColors = [
+    '#008779', // 马尔斯绿
+    '#0EA5E9', // 晴空蓝
+    '#8B5CF6', // 丁香紫
+    '#F59E0B', // 琥珀橙
+    '#10B981', // 青提绿
+    '#EF4444', // 珊瑚红
+  ];
+
+  // 1.5 工作清单与分类全局管理抽屉
+  void _showCategoryManagementSheet(BuildContext context, TaskProvider taskProv) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Consumer<TaskProvider>(
+        builder: (context, prov, _) {
+          final categories = prov.categories;
+          final counts = prov.categoryTaskCounts;
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.75,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.folder_special_rounded, color: AppTheme.marsGreen, size: 22),
+                        SizedBox(width: 8),
+                        Text(
+                          '工作清单与分类管理',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                        ),
+                      ],
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () => _showCreateCategoryDialog(context, prov),
+                      icon: const Icon(Icons.add, size: 16),
+                      label: const Text('新建分类', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.marsGreen,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '管理本地清单标签与色彩，任务卡片自动关联显示。',
+                  style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: categories.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
+                    itemBuilder: (c, idx) {
+                      final cat = categories[idx];
+                      final pendingCount = counts[cat.id] ?? 0;
+                      final isSystemDefault = cat.id == 'cat_work' || cat.id == 'cat_life';
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppTheme.borderLight),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 14,
+                              height: 14,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: cat.uiColor,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    cat.name,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '$pendingCount 个未完成待办事项',
+                                    style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // 编辑按钮
+                            IconButton(
+                              onPressed: () => _showEditCategoryDialog(context, prov, cat),
+                              icon: const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF64748B)),
+                              tooltip: '编辑分类',
+                            ),
+                            // 删除按钮
+                            if (!isSystemDefault)
+                              IconButton(
+                                onPressed: () {
+                                  _confirmDeleteCategory(context, prov, cat);
+                                },
+                                icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFEF4444)),
+                                tooltip: '删除分类',
+                              )
+                            else
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('默认', style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _confirmDeleteCategory(BuildContext context, TaskProvider prov, Category cat) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text('删除「${cat.name}」？', style: const TextStyle(fontWeight: FontWeight.w700)),
+        content: const Text('删除后，原属于该清单的任务不会被删除，将自动转为未分类。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await prov.deleteCategory(cat.id);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444), foregroundColor: Colors.white),
+            child: const Text('确认删除'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditCategoryDialog(BuildContext context, TaskProvider prov, Category cat) {
+    final nameController = TextEditingController(text: cat.name);
+    String selectedColor = cat.color;
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('编辑清单分类', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: '分类名称',
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text('选择色彩', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B))),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: _categoryColors.map((c) {
+                  final isCurrent = selectedColor.toUpperCase() == c.toUpperCase();
+                  final colorObj = Color(int.parse('FF${c.replaceAll('#', '')}', radix: 16));
+                  return GestureDetector(
+                    onTap: () {
+                      setDialogState(() => selectedColor = c);
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colorObj,
+                        border: Border.all(
+                          color: isCurrent ? const Color(0xFF0F172A) : Colors.transparent,
+                          width: 2.5,
+                        ),
+                      ),
+                      child: isCurrent ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text('取消')),
+            ElevatedButton(
+              onPressed: () async {
+                final name = nameController.text.trim();
+                if (name.isEmpty) return;
+                final nav = Navigator.of(dialogCtx);
+                await prov.updateCategory(cat.copyWith(name: name, color: selectedColor));
+                nav.pop();
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.marsGreen, foregroundColor: Colors.white),
+              child: const Text('保存修改'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCreateCategoryDialog(BuildContext context, TaskProvider prov) {
+    final nameController = TextEditingController();
+    String selectedColor = _categoryColors.first;
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('新建清单分类', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: nameController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: '分类名称',
+                  hintText: '如：阅读、考证、生活记录',
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text('选择色彩', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B))),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: _categoryColors.map((c) {
+                  final isCurrent = selectedColor.toUpperCase() == c.toUpperCase();
+                  final colorObj = Color(int.parse('FF${c.replaceAll('#', '')}', radix: 16));
+                  return GestureDetector(
+                    onTap: () {
+                      setDialogState(() => selectedColor = c);
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colorObj,
+                        border: Border.all(
+                          color: isCurrent ? const Color(0xFF0F172A) : Colors.transparent,
+                          width: 2.5,
+                        ),
+                      ),
+                      child: isCurrent ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text('取消')),
+            ElevatedButton(
+              onPressed: () async {
+                final name = nameController.text.trim();
+                if (name.isEmpty) return;
+                final nav = Navigator.of(dialogCtx);
+                await prov.addCategory(name: name, color: selectedColor);
+                nav.pop();
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.marsGreen, foregroundColor: Colors.white),
+              child: const Text('创建分类'),
             ),
           ],
         ),
@@ -562,6 +886,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       title: 'SQLite 本地数据库中心',
                       meta: 'SQLite 3 · 导出/备份',
                       onTap: () => _showDatabaseCenterSheet(context, profile),
+                    ),
+                    const Divider(height: 1, indent: 46, endIndent: 14, color: AppTheme.borderLight),
+                    Consumer<TaskProvider>(
+                      builder: (context, taskProv, _) {
+                        return _buildListRow(
+                          icon: Icons.folder_special_outlined,
+                          title: '工作清单与分类管理',
+                          meta: '${taskProv.categories.length} 个分类 · 标签与色彩',
+                          onTap: () => _showCategoryManagementSheet(context, taskProv),
+                        );
+                      },
                     ),
                   ]),
 

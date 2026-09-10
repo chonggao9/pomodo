@@ -499,22 +499,45 @@ class _TodayPageState extends State<TodayPage> {
                                 style:
                                     TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
                           ],
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              task.categoryId == 'cat_life' ? '晨练日常' : '工作日常',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF475569),
+                          Builder(builder: (ctx) {
+                            final taskProv = ctx.watch<TaskProvider>();
+                            final cat = taskProv.getCategoryById(task.categoryId);
+                            final catName = cat?.name ??
+                                (task.categoryId == null ? '工作与工程' : '未命名清单');
+                            final catColor =
+                                cat?.uiColor ?? const Color(0xFF008779);
+
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: catColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
                               ),
-                            ),
-                          ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 5,
+                                    height: 5,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: catColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    catName,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: catColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
                           if (task.notes != null && task.notes!.isNotEmpty) ...[
                             const SizedBox(width: 6),
                             const Text('📝', style: TextStyle(fontSize: 10)),

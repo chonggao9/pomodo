@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final pages = [
       TodayPage(onNavigateTab: _onTabTapped),
-      const PomodoroPage(),
+      PomodoroPage(onNavigateTab: _onTabTapped),
       const StatsPage(),
       const ProfilePage(),
     ];

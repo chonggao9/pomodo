@@ -1,14 +1,20 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../core/database/database_helper.dart';
 import '../models/task.dart';
+import '../models/category.dart';
 
 enum TaskFilter { all, pending, completed }
 
 class TaskProvider with ChangeNotifier {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
   List<Task> _tasks = [];
+  List<Category> _categories = [];
+  Map<String, int> _categoryTaskCounts = {};
   TaskFilter _currentFilter = TaskFilter.all;
   bool _isLoading = false;
+
+  List<Category> get categories => _categories;
+  Map<String, int> get categoryTaskCounts => _categoryTaskCounts;
 
   List<Task> get tasks {
     switch (_currentFilter) {
@@ -42,6 +48,8 @@ class TaskProvider with ChangeNotifier {
 
     try {
       _tasks = await _dbHelper.getAllTasks();
+      _categories = await _dbHelper.getAllCategories();
+      _categoryTaskCounts = await _dbHelper.getCategoryTaskCounts();
     } catch (e) {
       debugPrint('Error loading tasks: $e');
     } finally {
@@ -207,5 +215,63 @@ class TaskProvider with ChangeNotifier {
       await _dbHelper.updateTask(updated);
     }
     await loadTasks();
+  }
+
+  // === 分类管理 (Category Management) ===
+  Future<void> loadCategories() async {
+    try {
+      _categories = await _dbHelper.getAllCategories();
+      _categoryTaskCounts = await _dbHelper.getCategoryTaskCounts();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading categories: $e');
+    }
+  }
+
+  Category? getCategoryById(String? id) {
+    if (id == null) return null;
+    try {
+      return _categories.firstWhere((c) => c.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String getCategoryName(String? id) {
+    final cat = getCategoryById(id);
+    return cat?.name ?? '工作与工程';
+  }
+
+  Color getCategoryColor(String? id) {
+    final cat = getCategoryById(id);
+    return cat?.uiColor ?? const Color(0xFF008779);
+  }
+
+  Future<Category> addCategory({
+    required String name,
+    required String color,
+    String? icon,
+  }) async {
+    final newCat = Category(
+      id: 'cat_${DateTime.now().millisecondsSinceEpoch}',
+      name: name.trim(),
+      color: color,
+      icon: icon ?? 'folder',
+      sortOrder: _categories.length + 1,
+    );
+    await _dbHelper.insertCategory(newCat);
+    await loadCategories();
+    return newCat;
+  }
+
+  Future<void> updateCategory(Category category) async {
+    await _dbHelper.updateCategory(category);
+    await loadCategories();
+  }
+
+  Future<void> deleteCategory(String id) async {
+    await _dbHelper.deleteCategory(id);
+    await loadTasks();
+    await loadCategories();
   }
 }

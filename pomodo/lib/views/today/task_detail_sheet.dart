@@ -45,7 +45,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
   late TextEditingController _notesController;
   late TextEditingController _subtaskInputController;
 
-  String _category = '工作清单';
+  String? _categoryId;
   String _workload = 'hard'; // 'easy' (一般), 'medium' (中等难度), 'hard' (较高难度)
   String? _dueDate;
   String _dateChoice = '今天'; // '今天', '明天', '选择日期', '没有日期'
@@ -68,6 +68,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
       _workload = task.workload;
       _priority = task.priority;
       _dueDate = task.dueDate;
+      _categoryId = task.categoryId;
       _initDateChoiceFromDueDate(_dueDate);
       _loadSubtasks(task.id);
     } else {
@@ -142,6 +143,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
         workload: _workload,
         dueDate: _dueDate,
         priority: _priority,
+        categoryId: _categoryId,
       );
       await taskProv.updateTask(updated);
       return updated;
@@ -152,6 +154,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
         priority: _priority,
         workload: _workload,
         dueDate: _dueDate,
+        categoryId: _categoryId,
       );
 
       // 如果有临时创建的子任务，批量写入
@@ -251,6 +254,291 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
     widget.onNavigateTab?.call(1); // 切换至专注 Tab
   }
 
+  void _showCategoryPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final taskProv = context.watch<TaskProvider>();
+            final categories = taskProv.categories;
+            final counts = taskProv.categoryTaskCounts;
+
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                top: 16,
+                left: 20,
+                right: 20,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFCBD5E1),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '选择所属清单',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          _showCreateCategoryDialog(context, taskProv);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppTheme.marsGreen.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.add, size: 14, color: AppTheme.marsGreen),
+                              SizedBox(width: 4),
+                              Text(
+                                '新建清单',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.marsGreen,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  if (categories.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: Text(
+                          '暂无清单分类，点击右上角新建',
+                          style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                        ),
+                      ),
+                    )
+                  else
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.45,
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: categories.length,
+                        separatorBuilder: (_, _) =>
+                            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                        itemBuilder: (ctx, index) {
+                          final cat = categories[index];
+                          final isSelected = (_categoryId == cat.id) ||
+                              (_categoryId == null && index == 0);
+                          final pendingCount = counts[cat.id] ?? 0;
+
+                          return ListTile(
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            leading: Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: cat.uiColor,
+                              ),
+                            ),
+                            title: Text(
+                              cat.name,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight:
+                                    isSelected ? FontWeight.w700 : FontWeight.w500,
+                                color: isSelected
+                                    ? AppTheme.marsGreen
+                                    : const Color(0xFF0F172A),
+                              ),
+                            ),
+                            subtitle: Text(
+                              '$pendingCount 项待办',
+                              style: const TextStyle(
+                                  fontSize: 11, color: Color(0xFF94A3B8)),
+                            ),
+                            trailing: isSelected
+                                ? const Icon(Icons.check_rounded,
+                                    color: AppTheme.marsGreen, size: 20)
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                _categoryId = cat.id;
+                              });
+                              Navigator.pop(sheetCtx);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showCreateCategoryDialog(BuildContext context, TaskProvider taskProv) {
+    final nameController = TextEditingController();
+    final colors = [
+      '#008779', // 马尔斯绿
+      '#0EA5E9', // 晴空蓝
+      '#8B5CF6', // 丁香紫
+      '#F59E0B', // 琥珀橙
+      '#10B981', // 青提绿
+      '#EF4444', // 珊瑚红
+    ];
+    String selectedColor = colors.first;
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Text('新建清单分类',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: '如：阅读学习、备考、家居',
+                      hintStyle:
+                          const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: AppTheme.marsGreen, width: 1.5),
+                      ),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('选择标签颜色',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF64748B))),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: colors.map((c) {
+                      final isCurrent = selectedColor == c;
+                      final colorObj =
+                          Color(int.parse('FF${c.replaceAll('#', '')}', radix: 16));
+                      return GestureDetector(
+                        onTap: () {
+                          setDialogState(() => selectedColor = c);
+                        },
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colorObj,
+                            border: Border.all(
+                              color: isCurrent
+                                  ? const Color(0xFF0F172A)
+                                  : Colors.transparent,
+                              width: 2.5,
+                            ),
+                          ),
+                          child: isCurrent
+                              ? const Icon(Icons.check, size: 16, color: Colors.white)
+                              : null,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogCtx),
+                  child: const Text('取消', style: TextStyle(color: Color(0xFF64748B))),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final name = nameController.text.trim();
+                    if (name.isEmpty) return;
+                    final navDialog = Navigator.of(dialogCtx);
+                    final navPicker = Navigator.of(context);
+                    final created = await taskProv.addCategory(
+                      name: name,
+                      color: selectedColor,
+                    );
+                    if (mounted) {
+                      setState(() {
+                        _categoryId = created.id;
+                      });
+                    }
+                    navDialog.pop();
+                    if (navPicker.canPop()) {
+                      navPicker.pop();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.marsGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('创建并选择'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -292,40 +580,47 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // 清单标签
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _category = _category == '工作清单' ? '生活与健康' : '工作清单';
-                  });
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppTheme.marsGreen,
+              // 清单标签 (接入即选即建选择器)
+              Builder(builder: (ctx) {
+                final taskProv = ctx.watch<TaskProvider>();
+                final currentCat = taskProv.getCategoryById(_categoryId);
+                final currentCatName = currentCat?.name ??
+                    (_categoryId == null && taskProv.categories.isNotEmpty
+                        ? taskProv.categories.first.name
+                        : '工作与工程');
+                final currentCatColor = currentCat?.uiColor ?? AppTheme.marsGreen;
+
+                return InkWell(
+                  onTap: () => _showCategoryPicker(context),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: currentCatColor,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _category,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
+                        const SizedBox(width: 6),
+                        Text(
+                          currentCatName,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0F172A),
+                          ),
                         ),
-                      ),
-                      const Icon(Icons.arrow_drop_down, size: 16, color: Color(0xFF64748B)),
-                    ],
+                        const Icon(Icons.arrow_drop_down,
+                            size: 16, color: Color(0xFF64748B)),
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
 
               // 右侧保存与关闭操作
               Row(

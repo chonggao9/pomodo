@@ -185,6 +185,39 @@ class PomodoroProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// 提前完成并结算当前专注，停止白噪音并记录到 SQLite
+  /// 返回实际结算的专注分钟数
+  Future<int> completeEarly() async {
+    _timer?.cancel();
+    _stopSound();
+
+    final now = DateTime.now();
+    final totalPlannedSeconds = _targetMinutes * 60;
+    final elapsedSeconds = totalPlannedSeconds - _remainingSeconds;
+    int actualMinutes = (elapsedSeconds / 60).ceil();
+    if (actualMinutes < 1) actualMinutes = 1;
+    if (actualMinutes > _targetMinutes) actualMinutes = _targetMinutes;
+
+    final session = PomodoroSession(
+      id: 'pomo_${now.millisecondsSinceEpoch}',
+      taskId: _selectedTaskId,
+      durationMinutes: actualMinutes,
+      startedAt: _sessionStartTime?.toIso8601String() ?? now.toIso8601String(),
+      endedAt: now.toIso8601String(),
+      status: 'completed',
+      notes: _selectedTaskTitle != null ? '提前达成专注 [$_selectedTaskTitle]' : '提前达成专注',
+    );
+
+    await _dbHelper.insertSession(session);
+
+    _state = PomodoroState.idle;
+    _remainingSeconds = _targetMinutes * 60;
+    _sessionStartTime = null;
+    notifyListeners();
+
+    return actualMinutes;
+  }
+
   @override
   void dispose() {
     _timer?.cancel();

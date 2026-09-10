@@ -3,6 +3,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../models/task.dart';
 import '../../models/pomodoro_session.dart';
+import '../../models/category.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -256,6 +257,63 @@ class DatabaseHelper {
   Future<int> insertSession(PomodoroSession session) async {
     final db = await instance.database;
     return await db.insert('pomodoro_sessions', session.toMap());
+  }
+
+  // === Categories CRUD ===
+  Future<List<Category>> getAllCategories() async {
+    final db = await instance.database;
+    final result = await db.query('categories', orderBy: 'sort_order ASC, rowid ASC');
+    return result.map((json) => Category.fromMap(json)).toList();
+  }
+
+  Future<int> insertCategory(Category category) async {
+    final db = await instance.database;
+    return await db.insert('categories', category.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<int> updateCategory(Category category) async {
+    final db = await instance.database;
+    return await db.update(
+      'categories',
+      category.toMap(),
+      where: 'id = ?',
+      whereArgs: [category.id],
+    );
+  }
+
+  Future<int> deleteCategory(String id) async {
+    final db = await instance.database;
+    // 将引用该分类的任务 category_id 置为 null
+    await db.update(
+      'tasks',
+      {'category_id': null},
+      where: 'category_id = ?',
+      whereArgs: [id],
+    );
+    return await db.delete(
+      'categories',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<Map<String, int>> getCategoryTaskCounts() async {
+    final db = await instance.database;
+    final result = await db.rawQuery('''
+      SELECT category_id, COUNT(*) as count 
+      FROM tasks 
+      WHERE status != 'completed' AND category_id IS NOT NULL 
+      GROUP BY category_id
+    ''');
+    final Map<String, int> counts = {};
+    for (final row in result) {
+      final catId = row['category_id'] as String?;
+      final cnt = (row['count'] as int?) ?? 0;
+      if (catId != null) {
+        counts[catId] = cnt;
+      }
+    }
+    return counts;
   }
 
   // === Database Diagnostics & Maintenance ===
