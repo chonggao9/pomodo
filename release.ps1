@@ -133,7 +133,7 @@ Write-Host "[6/6] Publishing GitHub Release (v$Version)..." -ForegroundColor Yel
 $tag = "v$Version"
 $releaseTitle = "PomoDo v$Version"
 
-& gh release create $tag $distApk --title $releaseTitle --notes $Notes --clobber
+& gh release create $tag $distApk --title $releaseTitle --notes $Notes
 if ($LASTEXITCODE -eq 0) {
     Write-Host "=================================================" -ForegroundColor Green
     Write-Host " SUCCESS: PomoDo v$Version released successfully!" -ForegroundColor Green
