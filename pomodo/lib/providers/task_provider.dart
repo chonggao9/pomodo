@@ -55,12 +55,49 @@ class TaskProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  List<Task> tasksForDate(DateTime date) {
+    final dateStr =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final now = DateTime.now();
+    final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+
+    return tasks.where((t) {
+      if (isToday) {
+        if (t.dueDate == null || t.dueDate == dateStr) return true;
+        if (!t.isCompleted && t.dueDate != null && t.dueDate!.compareTo(dateStr) < 0) {
+          return true;
+        }
+        return false;
+      } else {
+        if (t.dueDate == dateStr) return true;
+        if (t.completedAt != null && t.completedAt!.startsWith(dateStr)) return true;
+        return false;
+      }
+    }).toList();
+  }
+
+  bool hasTasksOnDate(DateTime date) {
+    final dateStr =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final now = DateTime.now();
+    final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+
+    return _tasks.any((t) {
+      if (isToday) {
+        return t.dueDate == null || t.dueDate == dateStr || !t.isCompleted;
+      } else {
+        return t.dueDate == dateStr || (t.completedAt != null && t.completedAt!.startsWith(dateStr));
+      }
+    });
+  }
+
   Future<void> addTask({
     required String title,
     String? notes,
     String priority = 'P1',
     String workload = 'medium',
     int? ivyOrder,
+    String? dueDate,
   }) async {
     final now = DateTime.now().toIso8601String();
     final nextIvy = ivyOrder ?? (_tasks.where((t) => !t.isCompleted).length + 1);
@@ -73,6 +110,7 @@ class TaskProvider with ChangeNotifier {
       ivyOrder: nextIvy,
       status: 'pending',
       workload: workload,
+      dueDate: dueDate,
       createdAt: now,
       updatedAt: now,
     );

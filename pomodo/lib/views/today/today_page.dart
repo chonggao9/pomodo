@@ -16,6 +16,11 @@ class TodayPage extends StatefulWidget {
 
 class _TodayPageState extends State<TodayPage> {
   final TextEditingController _quickTitleController = TextEditingController();
+  DateTime _selectedDate = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    DateTime.now().day,
+  );
 
   @override
   void dispose() {
@@ -28,6 +33,12 @@ class _TodayPageState extends State<TodayPage> {
     final noteController = TextEditingController();
     String priority = 'P1';
     String workload = 'medium';
+    final now = DateTime.now();
+    final isSelectedToday = _selectedDate.year == now.year &&
+        _selectedDate.month == now.month &&
+        _selectedDate.day == now.day;
+    final dateStr =
+        '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
 
     showModalBottomSheet(
       context: context,
@@ -62,9 +73,9 @@ class _TodayPageState extends State<TodayPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    '新建待办任务',
-                    style: TextStyle(
+                  Text(
+                    isSelectedToday ? '新建待办任务' : '新建 ${_selectedDate.month}月${_selectedDate.day}日 待办',
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
@@ -75,7 +86,7 @@ class _TodayPageState extends State<TodayPage> {
                     controller: titleController,
                     autofocus: true,
                     decoration: InputDecoration(
-                      hintText: '想在今天专注完成什么？',
+                      hintText: isSelectedToday ? '想在今天专注完成什么？' : '想在这一天专注完成什么？',
                       hintStyle: TextStyle(color: AppTheme.textMuted),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -149,6 +160,7 @@ class _TodayPageState extends State<TodayPage> {
                               notes: noteController.text.isEmpty ? null : noteController.text,
                               priority: priority,
                               workload: workload,
+                              dueDate: isSelectedToday ? null : dateStr,
                             );
                         Navigator.pop(ctx);
                       },
@@ -175,15 +187,21 @@ class _TodayPageState extends State<TodayPage> {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final isSelectedToday = _selectedDate.year == today.year &&
+        _selectedDate.month == today.month &&
+        _selectedDate.day == today.day;
     const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
-    final monthDayStr = '${now.month}月${now.day}日 星期${weekdays[now.weekday - 1]}';
+    final monthDayStr =
+        '${_selectedDate.month}月${_selectedDate.day}日 星期${weekdays[_selectedDate.weekday - 1]}';
 
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
         child: Consumer<TaskProvider>(
           builder: (context, taskProv, child) {
-            final tasks = taskProv.tasks;
+            final tasks = taskProv.tasksForDate(_selectedDate);
+            final completedCount = tasks.where((t) => t.isCompleted).length;
 
             return CustomScrollView(
               slivers: [
@@ -218,7 +236,7 @@ class _TodayPageState extends State<TodayPage> {
                                   const Icon(Icons.check_circle_outline, size: 14, color: AppTheme.marsGreen),
                                   const SizedBox(width: 4),
                                   Text(
-                                    '${taskProv.completedCount}/${taskProv.totalCount}',
+                                    '$completedCount/${tasks.length}',
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
@@ -231,23 +249,59 @@ class _TodayPageState extends State<TodayPage> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          '今日',
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.8,
-                            color: AppTheme.textPrimary,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              isSelectedToday ? '今日' : '${_selectedDate.day}日待办',
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.8,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                            if (!isSelectedToday) ...[
+                              const SizedBox(width: 12),
+                              GestureDetector(
+                                onTap: () {
+                                  final n = DateTime.now();
+                                  setState(() => _selectedDate = DateTime(n.year, n.month, n.day));
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.marsGreen.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: AppTheme.marsGreen.withOpacity(0.3)),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.today_rounded, size: 14, color: AppTheme.marsGreen),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        '回今天',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.marsGreen,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 12),
 
                         // 周历指示胶囊
-                        _buildWeekStrip(),
+                        _buildWeekStrip(taskProv),
                         const SizedBox(height: 16),
 
                         // 快速添加输入胶囊
-                        _buildQuickAddBar(context),
+                        _buildQuickAddBar(context, isSelectedToday),
                         const SizedBox(height: 16),
 
                         // 筛选过滤器
@@ -271,17 +325,42 @@ class _TodayPageState extends State<TodayPage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.spa_outlined, size: 56, color: Colors.black.withOpacity(0.15)),
+                          Icon(
+                            isSelectedToday ? Icons.spa_outlined : Icons.event_note_outlined,
+                            size: 56,
+                            color: Colors.black.withOpacity(0.15),
+                          ),
                           const SizedBox(height: 12),
-                          const Text(
-                            '今天的所有任务都已完成',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textMuted),
+                          Text(
+                            isSelectedToday
+                                ? '今天的所有任务都已完成'
+                                : '${_selectedDate.month}月${_selectedDate.day}日 暂无待办任务',
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textMuted),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            '享受内心的从容与平静',
-                            style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                          Text(
+                            isSelectedToday
+                                ? '享受内心的从容与平静'
+                                : '可在上方输入框为此日期规划要事',
+                            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                           ),
+                          if (!isSelectedToday) ...[
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                final now = DateTime.now();
+                                setState(() => _selectedDate = DateTime(now.year, now.month, now.day));
+                              },
+                              icon: const Icon(Icons.arrow_back_rounded, size: 16, color: AppTheme.marsGreen),
+                              label: const Text('返回今日待办',
+                                  style: TextStyle(color: AppTheme.marsGreen, fontWeight: FontWeight.w600)),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: AppTheme.marsGreen),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -316,12 +395,13 @@ class _TodayPageState extends State<TodayPage> {
     );
   }
 
-  Widget _buildWeekStrip() {
+  Widget _buildWeekStrip(TaskProvider taskProv) {
     final now = DateTime.now();
-    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final today = DateTime(now.year, now.month, now.day);
+    final startOfWeek = today.subtract(Duration(days: today.weekday - 1));
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -331,35 +411,78 @@ class _TodayPageState extends State<TodayPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(7, (i) {
           final date = startOfWeek.add(Duration(days: i));
-          final isToday = date.day == now.day && date.month == now.month && date.year == now.year;
+          final isSelected = date.year == _selectedDate.year &&
+              date.month == _selectedDate.month &&
+              date.day == _selectedDate.day;
+          final isToday = date.year == today.year &&
+              date.month == today.month &&
+              date.day == today.day;
+          final hasTasks = taskProv.hasTasksOnDate(date);
           const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
 
-          return Container(
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-            decoration: BoxDecoration(
-              color: isToday ? AppTheme.marsGreen : Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  weekdays[i],
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isToday ? Colors.white70 : AppTheme.textMuted,
-                    fontWeight: FontWeight.w500,
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedDate = date;
+                });
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppTheme.marsGreen : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: AppTheme.marsGreen.withOpacity(0.25),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            )
+                          ]
+                        : [],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        weekdays[i],
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isSelected ? Colors.white70 : AppTheme.textMuted,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${date.day}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: isSelected ? Colors.white : AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      // 今天或有任务提示小圆点
+                      Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isSelected
+                              ? (isToday ? Colors.white : (hasTasks ? Colors.white70 : Colors.transparent))
+                              : (isToday
+                                  ? AppTheme.marsGreen
+                                  : (hasTasks ? AppTheme.marsGreen.withOpacity(0.5) : Colors.transparent)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${date.day}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isToday ? Colors.white : AppTheme.textPrimary,
-                  ),
-                ),
-              ],
+              ),
             ),
           );
         }),
@@ -367,7 +490,25 @@ class _TodayPageState extends State<TodayPage> {
     );
   }
 
-  Widget _buildQuickAddBar(BuildContext context) {
+  void _quickAddTask(BuildContext context) {
+    final text = _quickTitleController.text.trim();
+    if (text.isEmpty) return;
+    final now = DateTime.now();
+    final isToday = _selectedDate.year == now.year &&
+        _selectedDate.month == now.month &&
+        _selectedDate.day == now.day;
+    final dateStr =
+        '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+
+    context.read<TaskProvider>().addTask(
+          title: text,
+          dueDate: isToday ? null : dateStr,
+        );
+    _quickTitleController.clear();
+    FocusScope.of(context).unfocus();
+  }
+
+  Widget _buildQuickAddBar(BuildContext context, bool isSelectedToday) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -389,27 +530,21 @@ class _TodayPageState extends State<TodayPage> {
           Expanded(
             child: TextField(
               controller: _quickTitleController,
-              decoration: const InputDecoration(
-                hintText: '快速添加今日要事...',
+              decoration: InputDecoration(
+                hintText: isSelectedToday
+                    ? '快速添加今日要事...'
+                    : '添加 ${_selectedDate.month}月${_selectedDate.day}日 待办...',
+                hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
                 border: InputBorder.none,
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              onSubmitted: (text) {
-                if (text.trim().isEmpty) return;
-                context.read<TaskProvider>().addTask(title: text);
-                _quickTitleController.clear();
-              },
+              onSubmitted: (_) => _quickAddTask(context),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.arrow_upward_rounded, size: 18, color: AppTheme.marsGreen),
-            onPressed: () {
-              final text = _quickTitleController.text;
-              if (text.trim().isEmpty) return;
-              context.read<TaskProvider>().addTask(title: text);
-              _quickTitleController.clear();
-            },
+            onPressed: () => _quickAddTask(context),
           ),
         ],
       ),
