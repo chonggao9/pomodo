@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PomoDo · Pomodoro × ToDo 极简时间管理</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+
+  <!-- Top Controller Bar -->
+  <header class="top-controller-bar">
+    <div class="brand-title-wrap">
+      <div class="brand-badge-icon" title="PomoDo = Pomodoro + ToDo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="13" r="8"/>
+          <path d="M12 9v4l2.5 1.5"/>
+          <path d="M12 5V2"/>
+          <path d="M9.5 3.5c1.5 1 3.5 1 5 0"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-main-heading">
+          PomoDo
+          <span class="pill-confirmed-spec">Pomodoro × ToDo · 纯本地 V1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Mode Switcher -->
+    <div class="view-mode-tabs">
+      <button class="view-mode-btn active" onclick="switchMainView('mobile')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        移动端 App (4个Tab)
+      </button>
+      <button class="view-mode-btn" onclick="switchMainView('web')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Web 宽屏工作台 (本地版)
+      </button>
+      <button class="view-mode-btn" onclick="switchMainView('compare')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="9" height="16" rx="2"/><rect x="13" y="4" width="9" height="16" rx="2"/></svg>
+        ⚖️ 专注钟双风格同屏横评
+      </button>
+    </div>
+
+    <div style="font-size: 12px; color: var(--theme-primary); font-weight: 700; display: flex; align-items: center; gap: 6px;">
+      <span style="width: 8px; height: 8px; border-radius: 50%; background: #27AE60;"></span>
+      <span>方案 C 双模添加 · 方案 A 拟物表盘 · 方案 A 就地划线</span>
+    </div>
+  </header>
+
+  <!-- Main Showcase Stage -->
+  <main class="prototype-stage">
+
+    <!-- =========================================================
+         1. MOBILE PROTOTYPE SYSTEM (4 TABS)
+         ========================================================= -->
+    <div id="viewMobileSection" class="mobile-container">
+
+      <!-- Sub-screen Navigation Tabs for Prototype Verification -->
+      <div class="top-sub-bar">
+        <button id="btnTabToday" class="top-sub-tab active" onclick="switchMobileTab('today')">📋 1. 清单 (艾利排序)</button>
+        <button id="btnTabDetail" class="top-sub-tab" onclick="openDetailSheet()">📝 属性抽屉 (方案C)</button>
+        <button id="btnTabPomo" class="top-sub-tab" onclick="switchMobileTab('pomo')">🍅 2. 专注 (拟物表盘)</button>
+        <button id="btnTabStats" class="top-sub-tab" onclick="switchMobileTab('stats')">📊 3. 复盘 (GTD报表)</button>
+        <button id="btnTabProfile" class="top-sub-tab" onclick="switchMobileTab('profile')">👤 4. 我的 (主题&备份)</button>
+      </div>
+
+      <!-- Phone Shell -->
+      <div class="phone-mockup">
+        <!-- Top Status Bar -->
+        <div class="phone-status-header">
+          <span>22:06</span>
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <span>5G</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="phone-viewport">
+
+          <!-- -------------------------------------------------------------
+               TAB 1: 清单 (Things 3 风格纯白通透大标题 + 纯净任务流)
+               ------------------------------------------------------------- -->
+          <div id="pageToday" class="screen-view-today">
+            <!-- Things 3 风格纯白空气感大标题 -->
+            <div class="things-header-wrap">
+              <div class="things-header-top">
+                <div class="things-app-tag">
+                  <span class="things-logo-dot"></span>
+                  <span>PomoDo</span>
+                </div>
+                <div class="things-offline-badge">离线单机 · SQLite</div>
+              </div>
+              <div class="things-page-title">今日待办</div>
+              <div class="things-page-subtitle">9月9日 星期三 · 4 个待办事项</div>
+            </div>
+
+            <!-- Things 3 风格极简周历胶囊 -->
+            <div class="things-week-strip">
+              <div class="week-day-pill"><span class="week-day-name">一</span><span class="week-day-number">7</span><span class="week-workload-dot"></span></div>
+              <div class="week-day-pill"><span class="week-day-name">二</span><span class="week-day-number">8</span><span class="week-workload-dot"></span></div>
+              <div class="week-day-pill active has-work"><span class="week-day-name">三</span><span class="week-day-number">9</span><span class="week-workload-dot"></span></div>
+              <div class="week-day-pill"><span class="week-day-name">四</span><span class="week-day-number">10</span><span class="week-workload-dot"></span></div>
+              <div class="week-day-pill"><span class="week-day-name">五</span><span class="week-day-number">11</span><span class="week-workload-dot"></span></div>
+              <div class="week-day-pill"><span class="week-day-name">六</span><span class="week-day-number">12</span><span class="week-workload-dot"></span></div>
+              <div class="week-day-pill"><span class="week-day-name">日</span><span class="week-day-number">13</span><span class="week-workload-dot"></span></div>
+            </div>
+
+            <!-- Pure Task Stream List (Things 3 / Linear 雅致纯粹任务流) -->
+            <div class="task-stream-list" id="taskStreamBox">
+              <!-- Task 1 -->
+              <div class="pure-task-card" id="taskCard_1" onclick="openDetailSheet('taskCard_1', '早起晨跑与拉伸', 1, '7:25')">
+                <div class="pure-checkbox" onclick="event.stopPropagation(); toggleTaskStrike(this.parentElement)"></div>
+                <div class="pure-task-body">
+                  <div class="pure-task-text">早起晨跑与拉伸</div>
+                  <div class="pure-task-meta">
+                    <span>⏰ 7:25</span>
+                    <span>·</span>
+                    <span class="meta-pill-sub">晨练日常</span>
+                  </div>
+                </div>
+                <div class="pure-task-right-cluster">
+                  <button class="pure-pomo-quick-btn" onclick="startFocusFromCard('taskCard_1', '早起晨跑与拉伸', 1, event)" title="方案 A: 快捷跳入专注钟">
+                    <span>🍅</span><span>专注</span>
+                  </button>
+                  <div class="pure-ivy-num" title="艾利重要性 1">1</div>
+                </div>
+              </div>
+
+              <!-- Task 2 -->
+              <div class="pure-task-card" id="taskCard_2" onclick="openDetailSheet('taskCard_2', '与赵总吃中饭', 2, '12:00')">
+                <div class="pure-checkbox" onclick="event.stopPropagation(); toggleTaskStrike(this.parentElement)"></div>
+                <div class="pure-task-body">
+                  <div class="pure-task-text">与赵总吃中饭</div>
+                  <div class="pure-task-meta">
+                    <span>⏰ 12:00</span>
+                    <span>·</span>
+                    <span style="color: #64748B;">📍 湖滨银泰城</span>
+                  </div>
+                </div>
+                <div class="pure-task-right-cluster">
+                  <button class="pure-pomo-quick-btn" onclick="startFocusFromCard('taskCard_2', '与赵总吃中饭', 2, event)" title="方案 A: 快捷跳入专注钟">
+                    <span>🍅</span><span>专注</span>
+                  </button>
+                  <div class="pure-ivy-num" title="艾利重要性 2">2</div>
+                </div>
+              </div>
+
+              <!-- Task 3 -->
+              <div class="pure-task-card" id="taskCard_3" onclick="openDetailSheet('taskCard_3', '14:00 部门月度会议', 3, '14:00')">
+                <div class="pure-checkbox" onclick="event.stopPropagation(); toggleTaskStrike(this.parentElement)"></div>
+                <div class="pure-task-body">
+                  <div class="pure-task-text">14:00 部门月度会议</div>
+                  <div class="pure-task-meta">
+                    <span>⏰ 14:00</span>
+                    <span>·</span>
+                    <span class="meta-pill-sub">☑ 2/3 子任务</span>
+                  </div>
+                </div>
+                <div class="pure-task-right-cluster">
+                  <button class="pure-pomo-quick-btn" onclick="startFocusFromCard('taskCard_3', '14:00 部门月度会议', 3, event)" title="方案 A: 快捷跳入专注钟">
+                    <span>🍅</span><span>专注</span>
+                  </button>
+                  <div class="pure-ivy-num" title="艾利重要性 3">3</div>
+                </div>
+              </div>
+
+              <!-- Task 4 (已完成示范：方案A 墨水 Clip-path 划线) -->
+              <div class="pure-task-card is-completed" id="taskCard_4" onclick="toggleTaskStrike(this)">
+                <div class="pure-checkbox" onclick="event.stopPropagation(); toggleTaskStrike(this.parentElement)">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="pure-task-body">
+                  <div class="pure-task-text">🏖️ 订两张三亚的机票</div>
+                  <div class="pure-task-meta">
+                    <span>已完成 · 原地保留</span>
+                  </div>
+                </div>
+                <div class="pure-ivy-num" style="opacity: 0.4;">4</div>
+              </div>
+            </div>
+
+            <!-- 方案 C：悬浮灵动输入胶囊 (Floating Pill Dock) -->
+            <div class="floating-pill-dock">
+              <input id="quickInputText" class="floating-quick-input" placeholder="+ 快速记录待办，按 Enter 入列..." onkeypress="handleQuickEnter(event)" />
+              <button class="floating-add-btn" title="展开完整属性抽屉" onclick="openDetailSheet()">+</button>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------
+               MODAL: 任务详情 BOTTOM SHEET (方案 C 完整属性抽屉)
+               ------------------------------------------------------------- -->
+          <div id="pageDetailSheet" class="screen-view-detail" onclick="if(event.target===this)closeDetailSheet()">
+            <div class="white-sheet-panel">
+              <div class="sheet-drag-handle" onclick="closeDetailSheet()"></div>
+              <div class="sheet-top-line">
+                <div class="sheet-tag-indicator">
+                  <div class="tag-color-circle"></div>
+                  <span>工作清单</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <button class="sheet-save-action" onclick="saveFromSheet()">保存到本地</button>
+                  <span style="color: var(--text-tertiary); cursor: pointer;" onclick="closeDetailSheet()">✕</span>
+                </div>
+              </div>
+
+              <input id="sheetTaskTitle" class="sheet-task-input" value="14:00 部门月度会议" />
+
+              <div style="font-size: 13px; color: var(--text-tertiary);">添加描述或注意事项 (纯本地存储)...</div>
+
+              <!-- Quick Date Selection Pills -->
+              <div class="date-pills-row">
+                <span class="date-pill-btn active">今天</span>
+                <span class="date-pill-btn">明天</span>
+                <span class="date-pill-btn">选择日期 ∨</span>
+                <span class="date-pill-btn">没有日期</span>
+              </div>
+
+              <!-- Subtasks in detail -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-regular);">
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <span style="color: var(--theme-primary);">✓</span>
+                    <span>打印会议材料</span>
+                  </div>
+                  <span style="color: #CBD5E0;">✕</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-regular);">
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <span style="color: var(--theme-primary);">✓</span>
+                    <span>预约会议室，邮件通知参会人</span>
+                  </div>
+                  <span style="color: #CBD5E0;">✕</span>
+                </div>
+                <div style="font-size: 12px; color: var(--theme-primary); font-weight: 600; cursor: pointer;">
+                  + 添加子任务项
+                </div>
+              </div>
+
+              <!-- Workload Difficulty Selector (艾利工作量) -->
+              <div class="workload-bar-box">
+                <span style="font-size: 12px; color: var(--text-regular); font-weight: 600;">艾利工作量评估</span>
+                <div class="workload-segmented-ctrl">
+                  <button class="workload-choice">一般</button>
+                  <button class="workload-choice">中等难度</button>
+                  <button class="workload-choice active-red">较高难度</button>
+                </div>
+              </div>
+
+              <!-- 方案 B: 详情抽屉内沉浸专注大按钮 -->
+              <button class="sheet-start-pomo-btn" onclick="startFocusFromDetail()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>开始当前任务沉浸专注 (25m)</span>
+              </button>
+
+              <!-- Bottom Tools -->
+              <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-light); padding-top: 10px;">
+                <div style="display: flex; gap: 8px;">
+                  <span class="date-pill-btn active" style="padding: 4px 8px; font-size: 11px;">⏰ 14:00 ✕</span>
+                  <span class="date-pill-btn" style="padding: 4px 8px; font-size: 11px;">🔁 重复</span>
+                </div>
+                <span style="color: var(--text-tertiary);">•••</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------
+               MODAL: 本地个人档案 BOTTOM SHEET (纯离线单机自持)
+               ------------------------------------------------------------- -->
+          <div id="pageProfileSheet" class="screen-view-detail" onclick="if(event.target===this)closeProfileSheet()">
+            <div class="white-sheet-panel" style="padding-bottom: 24px; max-height: 88%; overflow-y: auto;">
+              <div class="sheet-drag-handle" onclick="closeProfileSheet()"></div>
+              <div class="sheet-top-line">
+                <div class="sheet-tag-indicator">
+                  <div class="tag-color-circle" style="background: var(--theme-primary);"></div>
+                  <span>本地档案 · 零网络自持</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="color: var(--text-tertiary); cursor: pointer; font-size: 16px;" onclick="closeProfileSheet()">✕</span>
+                </div>
+              </div>
+
+              <div style="font-size: 18px; font-weight: 800; color: var(--text-main);">本地个人档案设置</div>
+              <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">个性化您的离线昵称与头像，所有数据 100% 仅保存在本地设备。</div>
+
+              <!-- 昵称与座右铭输入 -->
+              <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-main);">离线昵称 / 称谓</label>
+                <input id="inputProfileNickname" class="sheet-task-input" style="font-size: 14px; font-weight: 500; padding: 10px 12px; border: 1px solid var(--border-light); border-radius: 8px;" placeholder="例如：Vy 或 晨曦" value="Vy" />
+                
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-main); margin-top: 4px;">每日专注座右铭</label>
+                <input id="inputProfileMotto" class="sheet-task-input" style="font-size: 14px; font-weight: 500; padding: 10px 12px; border: 1px solid var(--border-light); border-radius: 8px;" placeholder="例如：做完最重要的 3 件事再休息" value="做完最重要的 3 件事再休息" />
+              </div>
+
+              <!-- 本地图标风格头像选择器 -->
+              <div style="margin-top: 10px;">
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; display: block;">挑选预设极简头像</label>
+                <div class="avatar-selection-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                  <div class="avatar-option-card active" id="avatarOpt_sunset" onclick="selectProfileAvatar('sunset', this)" style="border: 2px solid var(--theme-primary); border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; background: var(--theme-subtle);">
+                    <div style="font-size: 28px;">🌅</div>
+                    <div style="font-size: 11px; font-weight: 700; margin-top: 4px; color: var(--text-main);">落日海湾</div>
+                  </div>
+                  <div class="avatar-option-card" id="avatarOpt_forest" onclick="selectProfileAvatar('forest', this)" style="border: 1px solid var(--border-light); border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; background: #FFFFFF;">
+                    <div style="font-size: 28px;">🌲</div>
+                    <div style="font-size: 11px; font-weight: 700; margin-top: 4px; color: var(--text-main);">幽静苍翠</div>
+                  </div>
+                  <div class="avatar-option-card" id="avatarOpt_mountain" onclick="selectProfileAvatar('mountain', this)" style="border: 1px solid var(--border-light); border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; background: #FFFFFF;">
+                    <div style="font-size: 28px;">🏔️</div>
+                    <div style="font-size: 11px; font-weight: 700; margin-top: 4px; color: var(--text-main);">雪山极客</div>
+                  </div>
+                  <div class="avatar-option-card" id="avatarOpt_coffee" onclick="selectProfileAvatar('coffee', this)" style="border: 1px solid var(--border-light); border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; background: #FFFFFF;">
+                    <div style="font-size: 28px;">☕</div>
+                    <div style="font-size: 11px; font-weight: 700; margin-top: 4px; color: var(--text-main);">慢调咖啡</div>
+                  </div>
+                  <div class="avatar-option-card" id="avatarOpt_fox" onclick="selectProfileAvatar('fox', this)" style="border: 1px solid var(--border-light); border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; background: #FFFFFF;">
+                    <div style="font-size: 28px;">🦊</div>
+                    <div style="font-size: 11px; font-weight: 700; margin-top: 4px; color: var(--text-main);">灵动赤狐</div>
+                  </div>
+                  <div class="avatar-option-card" id="avatarOpt_rocket" onclick="selectProfileAvatar('rocket', this)" style="border: 1px solid var(--border-light); border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; background: #FFFFFF;">
+                    <div style="font-size: 28px;">🚀</div>
+                    <div style="font-size: 11px; font-weight: 700; margin-top: 4px; color: var(--text-main);">探索火箭</div>
+                  </div>
+                </div>
+              </div>
+
+              <button class="sheet-start-pomo-btn" style="margin-top: 14px;" onclick="saveLocalProfile()">
+                <span>保存本地个人档案</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------
+               MODAL: SQLite 本地数据库中心 BOTTOM SHEET (工业级数据中心)
+               ------------------------------------------------------------- -->
+          <div id="pageDatabaseCenterSheet" class="screen-view-detail" onclick="if(event.target===this)closeDatabaseCenterSheet()">
+            <div class="white-sheet-panel" style="padding-bottom: 24px; max-height: 88%; overflow-y: auto;">
+              <div class="sheet-drag-handle" onclick="closeDatabaseCenterSheet()"></div>
+              <div class="sheet-top-line">
+                <div class="sheet-tag-indicator">
+                  <div class="tag-color-circle" style="background: #27AE60;"></div>
+                  <span>嵌入式数据库 · SQLite 3 WASM</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="color: var(--text-tertiary); cursor: pointer; font-size: 16px;" onclick="closeDatabaseCenterSheet()">✕</span>
+                </div>
+              </div>
+
+              <div style="font-size: 18px; font-weight: 800; color: var(--text-main);">SQLite 本地数据库中心</div>
+              <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">标准 SQLite 3 嵌入式存储引擎，离线运行在浏览器 IndexedDB 物理沙盒中。</div>
+
+              <!-- 数据库状态监控看板 -->
+              <div style="background: #F8FAF9; border: 1px solid #E2ECE9; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-light); padding-bottom: 10px;">
+                  <div>
+                    <div style="font-size: 11px; color: var(--text-tertiary); font-weight: 600;">数据库物理大小</div>
+                    <div style="font-size: 20px; font-weight: 800; color: var(--text-main); font-family: 'JetBrains Mono', monospace;" id="dbMetricFileSize">计算中...</div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 11px; color: var(--text-tertiary); font-weight: 600;">完整性校验 (PRAGMA)</div>
+                    <div style="font-size: 13px; font-weight: 800; color: #27AE60; display: flex; align-items: center; gap: 4px; justify-content: flex-end;">
+                      <span style="width: 7px; height: 7px; border-radius: 50%; background: #27AE60;"></span>
+                      <span id="dbMetricIntegrity">OK (完整无损)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 4 格核心业务表统计 -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <div style="background: #FFFFFF; border: 1px solid var(--border-light); border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 11px; color: var(--text-secondary);">📋 待办任务表 (tasks)</div>
+                    <div style="font-size: 15px; font-weight: 800; color: var(--theme-primary); margin-top: 2px;" id="dbMetricTasks">-- 项</div>
+                  </div>
+                  <div style="background: #FFFFFF; border: 1px solid var(--border-light); border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 11px; color: var(--text-secondary);">🍅 番茄流水表 (sessions)</div>
+                    <div style="font-size: 15px; font-weight: 800; color: #E74C3C; margin-top: 2px;" id="dbMetricSessions">-- 次</div>
+                  </div>
+                  <div style="background: #FFFFFF; border: 1px solid var(--border-light); border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 11px; color: var(--text-secondary);">☑️ 子任务表 (subtasks)</div>
+                    <div style="font-size: 15px; font-weight: 800; color: var(--text-main); margin-top: 2px;" id="dbMetricSubtasks">-- 项</div>
+                  </div>
+                  <div style="background: #FFFFFF; border: 1px solid var(--border-light); border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 11px; color: var(--text-secondary);">🏷️ 分类表 (categories)</div>
+                    <div style="font-size: 15px; font-weight: 800; color: var(--text-main); margin-top: 2px;" id="dbMetricCategories">-- 个</div>
+                  </div>
+                </div>
+
+                <!-- 迁移历史版本 -->
+                <div style="font-size: 11px; color: var(--text-tertiary); display: flex; justify-content: space-between; align-items: center; padding-top: 2px;">
+                  <span>Schema 架构版本：<strong id="dbMetricSchemaVer" style="color: var(--text-main); font-family: 'JetBrains Mono', monospace;">v1</strong></span>
+                  <span id="dbMetricMigratedTime">已自动同步</span>
+                </div>
+              </div>
+
+              <!-- 物理备份与无损迁移操作区 -->
+              <div style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-top: 14px; margin-bottom: 6px;">数据备份与迁移</div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="sheet-start-pomo-btn" style="background: var(--theme-primary); color: #FFFFFF; padding: 11px;" onclick="exportLocalDbFile()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>导出真实 SQLite 数据库 (.db 文件)</span>
+                </button>
+                <div style="font-size: 11px; color: var(--text-tertiary); line-height: 1.4; padding: 0 4px;">
+                  导出的为标准二进制 SQLite 3 数据库，可直接在 Navicat、DBeaver、DB Browser for SQLite 等任何专业数据库管理工具中打开查看与查询。
+                </div>
+
+                <button class="sheet-start-pomo-btn" style="background: #FFFFFF; color: var(--text-main); border: 1px solid var(--border-light); padding: 11px; margin-top: 4px;" onclick="importLocalDb()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>导入 / 还原外部 .db 数据库</span>
+                </button>
+              </div>
+
+              <!-- 数据重置危险区 -->
+              <div style="margin-top: 18px; padding: 12px; border-radius: 10px; background: #FFF5F5; border: 1px solid #FED7D7;">
+                <div style="font-size: 12px; font-weight: 700; color: #E53E3E; display: flex; align-items: center; gap: 6px;">
+                  <span>⚠️ 危险区域 · 本地数据重置</span>
+                </div>
+                <div style="font-size: 11px; color: #C53030; margin: 4px 0 8px 0; line-height: 1.4;">
+                  清空本地待办任务与专注记录流水并恢复初始空白数据库。请在操作前先导出备份。
+                </div>
+                <button style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #E53E3E; background: #FFFFFF; color: #E53E3E; font-size: 12px; font-weight: 700; cursor: pointer; transition: background-color 160ms ease;" onclick="confirmResetDatabase()">
+                  清空并重置本地数据库
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------
+               MODAL: 待办与清单偏好 BOTTOM SHEET (选项 A: 艾利工作法核心机制)
+               ------------------------------------------------------------- -->
+          <div id="pageTaskRulesSheet" class="screen-view-detail" onclick="if(event.target===this)closeTaskRulesSheet()">
+            <div class="white-sheet-panel" style="padding-bottom: 24px;">
+              <div class="sheet-drag-handle" onclick="closeTaskRulesSheet()"></div>
+              <div class="sheet-top-line">
+                <div class="sheet-tag-indicator">
+                  <div class="tag-color-circle" style="background: #2980B9;"></div>
+                  <span>效率法则 · 艾利时间管理</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="color: var(--text-tertiary); cursor: pointer; font-size: 16px;" onclick="closeTaskRulesSheet()">✕</span>
+                </div>
+              </div>
+
+              <div style="font-size: 18px; font-weight: 800; color: var(--text-main);">待办与清单偏好</div>
+              <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">基于经典艾利工作法（Ivy Lee Method）：每天严格专注最重要的核心待办，消灭一项再做下一项。</div>
+
+              <!-- 规则 1: 每日核心任务上限 -->
+              <div style="background: #F8FAF9; border: 1px solid var(--border-light); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 13px; font-weight: 700; color: var(--text-main);">今日核心任务上限</span>
+                  <span style="font-size: 11px; color: var(--theme-primary); font-weight: 700;" id="taskLimitDisplay">严格 5 项</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="date-pill-btn" style="flex:1; text-align:center; padding: 6px 0; font-size: 12px;" onclick="setIvyLimit(3, this)">3 项 (极度聚焦)</button>
+                  <button class="date-pill-btn active" style="flex:1; text-align:center; padding: 6px 0; font-size: 12px;" onclick="setIvyLimit(5, this)">5 项 (标准推荐)</button>
+                  <button class="date-pill-btn" style="flex:1; text-align:center; padding: 6px 0; font-size: 12px;" onclick="setIvyLimit(6, this)">6 项 (经典原版)</button>
+                </div>
+              </div>
+
+              <!-- 规则 2: 打勾完成呈现 -->
+              <div style="background: #F8FAF9; border: 1px solid var(--border-light); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 13px; font-weight: 700; color: var(--text-main);">打勾完成视觉呈现</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="date-pill-btn active" style="flex:1; text-align:center; padding: 6px 0; font-size: 12px;" onclick="setTaskCompleteStyle('strike', this)">墨水就地划线 (方案 A)</button>
+                  <button class="date-pill-btn" style="flex:1; text-align:center; padding: 6px 0; font-size: 12px;" onclick="setTaskCompleteStyle('collapse', this)">折叠移入底部 (方案 B)</button>
+                </div>
+                <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 2px;">
+                  划线保留带来强烈的消除成就感；折叠归档则保持清单极致空灵。
+                </div>
+              </div>
+
+              <button class="sheet-start-pomo-btn" style="margin-top: 4px;" onclick="saveTaskRules()">
+                <span>保存清单偏好</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------
+               MODAL: 专注与番茄规则 BOTTOM SHEET (选项 A: 专注心流机制)
+               ------------------------------------------------------------- -->
+          <div id="pagePomoRulesSheet" class="screen-view-detail" onclick="if(event.target===this)closePomoRulesSheet()">
+            <div class="white-sheet-panel" style="padding-bottom: 24px;">
+              <div class="sheet-drag-handle" onclick="closePomoRulesSheet()"></div>
+              <div class="sheet-top-line">
+                <div class="sheet-tag-indicator">
+                  <div class="tag-color-circle" style="background: #E74C3C;"></div>
+                  <span>心流引擎 · 番茄工作法</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="color: var(--text-tertiary); cursor: pointer; font-size: 16px;" onclick="closePomoRulesSheet()">✕</span>
+                </div>
+              </div>
+
+              <div style="font-size: 18px; font-weight: 800; color: var(--text-main);">专注与番茄钟设置</div>
+              <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">经典博朗白瓷拟物刻度表盘，搭配科学的心流专注与间歇休息循环。</div>
+
+              <!-- 专注时长选择 -->
+              <div style="background: #F8FAF9; border: 1px solid var(--border-light); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 13px; font-weight: 700; color: var(--text-main);">单次专注目标时长</span>
+                  <span style="font-size: 11px; color: #E74C3C; font-weight: 700;" id="pomoDurationDisplay">25 分钟</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                  <button class="date-pill-btn" style="text-align:center; padding: 6px 0; font-size: 12px;" onclick="setPomoTargetMinutes(15, this)">15m</button>
+                  <button class="date-pill-btn active" style="text-align:center; padding: 6px 0; font-size: 12px;" onclick="setPomoTargetMinutes(25, this)">25m (标准)</button>
+                  <button class="date-pill-btn" style="text-align:center; padding: 6px 0; font-size: 12px;" onclick="setPomoTargetMinutes(35, this)">35m</button>
+                  <button class="date-pill-btn" style="text-align:center; padding: 6px 0; font-size: 12px;" onclick="setPomoTargetMinutes(45, this)">45m</button>
+                </div>
+              </div>
+
+              <!-- 休息机制选择 -->
+              <div style="background: #F8FAF9; border: 1px solid var(--border-light); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 13px; font-weight: 700; color: var(--text-main);">间歇休息机制</span>
+                  <span style="font-size: 11px; color: var(--text-secondary);" id="pomoBreakDisplay">短休 5m · 长休 15m</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="date-pill-btn active" style="flex:1; text-align:center; padding: 6px 0; font-size: 12px;" onclick="setPomoBreak(5, 15, this)">短休 5m / 长休 15m</button>
+                  <button class="date-pill-btn" style="flex:1; text-align:center; padding: 6px 0; font-size: 12px;" onclick="setPomoBreak(10, 20, this)">短休 10m / 长休 20m</button>
+                </div>
+              </div>
+
+              <button class="sheet-start-pomo-btn" style="margin-top: 4px;" onclick="savePomoRules()">
+                <span>保存番茄钟配置</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------
+               MODAL: 语言切换 BOTTOM SHEET (方案 A 独立单行)
+               ------------------------------------------------------------- -->
+          <div id="pageLanguageSheet" class="screen-view-detail" onclick="if(event.target===this)closeLanguageSheet()">
+            <div class="white-sheet-panel" style="padding-bottom: 24px;">
+              <div class="sheet-drag-handle" onclick="closeLanguageSheet()"></div>
+              <div class="sheet-top-line">
+                <div class="sheet-tag-indicator">
+                  <div class="tag-color-circle" style="background: var(--theme-primary);"></div>
+                  <span>多语言国际化 · i18n</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="color: var(--text-tertiary); cursor: pointer; font-size: 16px;" onclick="closeLanguageSheet()">✕</span>
+                </div>
+              </div>
+
+              <div style="font-size: 18px; font-weight: 800; color: var(--text-main);">选择系统显示语言</div>
+              <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">支持按需切换应用界面语言，默认为跟随系统语言偏好设置。</div>
+
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                <!-- 选项 1: 跟随系统 -->
+                <div class="profile-list-row lang-choice-row" id="langOpt_system" style="border: 1px solid var(--border-light); border-radius: 10px; padding: 12px 14px; cursor: pointer;" onclick="selectLanguage('system', '跟随系统 (System)')">
+                  <div class="row-left-content">
+                    <div style="font-size: 18px;">🌐</div>
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">跟随系统 (System Default)</div>
+                      <div style="font-size: 11px; color: var(--text-secondary);">自动匹配设备操作系统的显示语言</div>
+                    </div>
+                  </div>
+                  <span class="lang-check-icon" id="langCheck_system" style="color: var(--theme-primary); font-weight: 800; font-size: 16px;"></span>
+                </div>
+
+                <!-- 选项 2: 简体中文 -->
+                <div class="profile-list-row lang-choice-row selected-lang" id="langOpt_zh" style="border: 1px solid var(--theme-primary); background: var(--theme-subtle); border-radius: 10px; padding: 12px 14px; cursor: pointer;" onclick="selectLanguage('zh', '简体中文 (默认)')">
+                  <div class="row-left-content">
+                    <div style="font-size: 18px;">🇨🇳</div>
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">简体中文 (Simplified Chinese)</div>
+                      <div style="font-size: 11px; color: var(--text-secondary);">全界面使用标准简体中文排版</div>
+                    </div>
+                  </div>
+                  <span class="lang-check-icon" id="langCheck_zh" style="color: var(--theme-primary); font-weight: 800; font-size: 16px;">✓</span>
+                </div>
+
+                <!-- 选项 3: English -->
+                <div class="profile-list-row lang-choice-row" id="langOpt_en" style="border: 1px solid var(--border-light); border-radius: 10px; padding: 12px 14px; cursor: pointer;" onclick="selectLanguage('en', 'English')">
+                  <div class="row-left-content">
+                    <div style="font-size: 18px;">🇺🇸</div>
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">English (United States)</div>
+                      <div style="font-size: 11px; color: var(--text-secondary);">Clean typography and English interface</div>
+                    </div>
+                  </div>
+                  <span class="lang-check-icon" id="langCheck_en" style="color: var(--theme-primary); font-weight: 800; font-size: 16px;"></span>
+                </div>
+              </div>
+
+              <button class="sheet-start-pomo-btn" style="margin-top: 6px;" onclick="saveLanguageSetting()">
+                <span>保存语言设置</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------
+               MODAL: 隐私协议与数据合规 BOTTOM SHEET
+               ------------------------------------------------------------- -->
+          <div id="pagePrivacySheet" class="screen-view-detail" onclick="if(event.target===this)closePrivacySheet()">
+            <div class="white-sheet-panel" style="padding-bottom: 24px; max-height: 88%; overflow-y: auto;">
+              <div class="sheet-drag-handle" onclick="closePrivacySheet()"></div>
+              <div class="sheet-top-line">
+                <div class="sheet-tag-indicator">
+                  <div class="tag-color-circle" style="background: var(--theme-primary);"></div>
+                  <span>隐私优先 · 数据合规声明</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="color: var(--text-tertiary); cursor: pointer; font-size: 16px;" onclick="closePrivacySheet()">✕</span>
+                </div>
+              </div>
+
+              <div style="font-size: 18px; font-weight: 800; color: var(--text-main);">PomoDo 隐私政策与数据安全声明</div>
+              <div style="font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px;">更新日期：2026年9月 · 适用范围：PomoDo 客户端全平台</div>
+
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12px; color: var(--text-regular); line-height: 1.6;">
+                <div style="background: #F8FAF9; border-radius: 10px; padding: 12px; border: 1px solid var(--border-light);">
+                  <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    <span>🛡️ 1. 本地优先与单机隐私自持</span>
+                  </div>
+                  <div>在纯离线使用状态下，您创建的所有待办清单、艾利优先级排序、专注记录与统计分析流水，<strong>100% 仅保存在您本地设备的嵌入式 SQLite 数据库中</strong>。应用绝不在未经您显式许可的情况下采集或上传任何任务内容与行为埋点。</div>
+                </div>
+
+                <div style="background: #F8FAF9; border-radius: 10px; padding: 12px; border: 1px solid var(--border-light);">
+                  <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    <span>🚫 2. 零网络依赖与零追踪上报</span>
+                  </div>
+                  <div>PomoDo 坚定贯彻单机架构。客户端运行过程中<strong>绝不向任何云端服务器发送网络请求</strong>，不包含任何第三方用户行为分析、遥测或广告 SDK。您的时间流水与待办事项只属于您自己。</div>
+                </div>
+
+                <div style="background: #F8FAF9; border-radius: 10px; padding: 12px; border: 1px solid var(--border-light);">
+                  <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    <span>💾 3. SQLite 物理数据库绝对自主权</span>
+                  </div>
+                  <div>您随时有权通过「SQLite 本地数据库中心」无损导出标准的 <code>.db</code> 物理数据库文件，并在任意专业 SQLite 管理工具中自由查询或迁移备份，真正将全部数据控制权掌控在您手中。</div>
+                </div>
+
+                <div style="font-size: 11px; color: var(--text-secondary); padding: 4px 2px;">
+                  如有任何隐私安全疑问或本地使用反馈，欢迎随时致信我们的官方支持团队：<br/>
+                  <a href="mailto:chonggao9@gmail.com" style="color: var(--theme-primary); font-weight: 700; text-decoration: underline;">chonggao9@gmail.com</a>
+                </div>
+              </div>
+
+              <button class="sheet-start-pomo-btn" style="margin-top: 8px;" onclick="closePrivacySheet()">
+                <span>我已阅读并了解</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------
+               TAB 2: 专注 (博朗 Dieter Rams 纯白极简时钟)
+               ------------------------------------------------------------- -->
+          <div id="pagePomo" class="screen-view-pomodoro">
+            <div class="pomo-minimal-header">
+              <div class="pomo-back-btn" onclick="switchMobileTab('today')" style="white-space: nowrap; flex-shrink: 0;">
+                <span>‹ 返回清单</span>
+              </div>
+              <div style="position: relative; max-width: 170px; flex-shrink: 1;">
+                <div class="pomo-focus-target-pill" id="pomoTargetPill" onclick="togglePomoTaskDropdown(event)" title="点击选择当前专注绑定的任务">
+                  <span class="pomo-target-dot"></span>
+                  <span id="currentPomoTaskLabel" class="pomo-target-text-ellipsis">[3] 14:00 部门月度会议</span>
+                  <span style="font-size: 10px; color: var(--text-tertiary);">▾</span>
+                </div>
+                <!-- 任务点选极简浮层 -->
+                <div id="pomoTaskDropdown" class="pomo-task-dropdown-menu" style="display: none;" onclick="event.stopPropagation()">
+                  <div class="pomo-dropdown-header">选择专注关联的任务</div>
+                  <div class="pomo-dropdown-item" id="pomoTaskOpt_free" onclick="selectPomoTask('', '自由专注 (无关联任务)', 0)">
+                    <span style="font-size: 14px;">🕊️</span>
+                    <span style="flex: 1;">自由专注 (无关联待办)</span>
+                  </div>
+                  <div class="pomo-dropdown-item" id="pomoTaskOpt_1" onclick="selectPomoTask('taskCard_1', '早起晨跑与拉伸', 1)">
+                    <span class="pure-ivy-num sm" style="background: var(--ivy-red);">1</span>
+                    <span style="flex: 1;">早起晨跑与拉伸</span>
+                  </div>
+                  <div class="pomo-dropdown-item" id="pomoTaskOpt_2" onclick="selectPomoTask('taskCard_2', '与赵总吃中饭', 2)">
+                    <span class="pure-ivy-num sm" style="background: var(--ivy-cyan);">2</span>
+                    <span style="flex: 1;">与赵总吃中饭</span>
+                  </div>
+                  <div class="pomo-dropdown-item active" id="pomoTaskOpt_3" onclick="selectPomoTask('taskCard_3', '14:00 部门月度会议', 3)">
+                    <span class="pure-ivy-num sm" style="background: var(--ivy-blue);">3</span>
+                    <span style="flex: 1;">14:00 部门月度会议</span>
+                  </div>
+                </div>
+              </div>
+              <div class="pomo-fullscreen-btn" onclick="toggleFullscreenFocus()" title="全屏沉浸专注 (快捷键 F)" style="display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; cursor: pointer; color: var(--text-secondary); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-light); background: #FFFFFF; transition: background-color 160ms ease; white-space: nowrap; flex-shrink: 0;">
+                <span style="font-size: 12px;">⛶</span>
+                <span>全屏</span>
+              </div>
+            </div>
+
+            <!-- 极简拟物 60 格精密机械刻度表盘 (Dieter Rams × Emil Kowalski) -->
+            <div class="pomo-clock-stage">
+              <div class="clock-outer-dial">
+                <svg class="clock-svg-ticks" viewBox="0 0 280 280">
+  <defs>
+    <radialGradient id="dialFaceGradient" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="70%" stop-color="#FAFCFD" />
+      <stop offset="100%" stop-color="#F1F5F9" />
+    </radialGradient>
+    <linearGradient id="arcGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00A896" />
+      <stop offset="100%" stop-color="#008779" />
+    </linearGradient>
+  </defs>
+
+  <!-- Dial Base Plate with Subtle Chamfer -->
+  <circle cx="140" cy="140" r="132" fill="url(#dialFaceGradient)" stroke="#E2E8F0" stroke-width="1.5" />
+  <circle cx="140" cy="140" r="127" fill="none" stroke="#FFFFFF" stroke-width="1.5" />
+
+  <!-- 60 Precision Radial Ticks -->
+  <g class="dial-ticks">
+    <line x1="140.00" y1="16.00" x2="140.00" y2="30.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="152.96" y1="16.68" x2="152.13" y2="24.64" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="165.78" y1="18.71" x2="164.12" y2="26.53" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="178.32" y1="22.07" x2="175.85" y2="29.68" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="190.44" y1="26.72" x2="187.18" y2="34.03" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="202.00" y1="32.61" x2="195.00" y2="44.74" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="212.89" y1="39.68" x2="208.18" y2="46.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="222.97" y1="47.85" x2="217.62" y2="53.80" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="232.15" y1="57.03" x2="226.20" y2="62.38" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="240.32" y1="67.11" x2="233.85" y2="71.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="247.39" y1="78.00" x2="235.26" y2="85.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="253.28" y1="89.56" x2="245.97" y2="92.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="257.93" y1="101.68" x2="250.32" y2="104.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="261.29" y1="114.22" x2="253.47" y2="115.88" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="263.32" y1="127.04" x2="255.36" y2="127.87" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="264.00" y1="140.00" x2="250.00" y2="140.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="263.32" y1="152.96" x2="255.36" y2="152.13" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="261.29" y1="165.78" x2="253.47" y2="164.12" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="257.93" y1="178.32" x2="250.32" y2="175.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="253.28" y1="190.44" x2="245.97" y2="187.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="247.39" y1="202.00" x2="235.26" y2="195.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="240.32" y1="212.89" x2="233.85" y2="208.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="232.15" y1="222.97" x2="226.20" y2="217.62" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="222.97" y1="232.15" x2="217.62" y2="226.20" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="212.89" y1="240.32" x2="208.18" y2="233.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="202.00" y1="247.39" x2="195.00" y2="235.26" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="190.44" y1="253.28" x2="187.18" y2="245.97" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="178.32" y1="257.93" x2="175.85" y2="250.32" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="165.78" y1="261.29" x2="164.12" y2="253.47" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="152.96" y1="263.32" x2="152.13" y2="255.36" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="140.00" y1="264.00" x2="140.00" y2="250.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="127.04" y1="263.32" x2="127.87" y2="255.36" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="114.22" y1="261.29" x2="115.88" y2="253.47" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="101.68" y1="257.93" x2="104.15" y2="250.32" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="89.56" y1="253.28" x2="92.82" y2="245.97" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="78.00" y1="247.39" x2="85.00" y2="235.26" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="67.11" y1="240.32" x2="71.82" y2="233.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="57.03" y1="232.15" x2="62.38" y2="226.20" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="47.85" y1="222.97" x2="53.80" y2="217.62" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="39.68" y1="212.89" x2="46.15" y2="208.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="32.61" y1="202.00" x2="44.74" y2="195.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="26.72" y1="190.44" x2="34.03" y2="187.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="22.07" y1="178.32" x2="29.68" y2="175.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="18.71" y1="165.78" x2="26.53" y2="164.12" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="16.68" y1="152.96" x2="24.64" y2="152.13" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="16.00" y1="140.00" x2="30.00" y2="140.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="16.68" y1="127.04" x2="24.64" y2="127.87" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="18.71" y1="114.22" x2="26.53" y2="115.88" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="22.07" y1="101.68" x2="29.68" y2="104.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="26.72" y1="89.56" x2="34.03" y2="92.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="32.61" y1="78.00" x2="44.74" y2="85.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="39.68" y1="67.11" x2="46.15" y2="71.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="47.85" y1="57.03" x2="53.80" y2="62.38" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="57.03" y1="47.85" x2="62.38" y2="53.80" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="67.11" y1="39.68" x2="71.82" y2="46.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="78.00" y1="32.61" x2="85.00" y2="44.74" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="89.56" y1="26.72" x2="92.82" y2="34.03" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="101.68" y1="22.07" x2="104.15" y2="29.68" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="114.22" y1="18.71" x2="115.88" y2="26.53" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="127.04" y1="16.68" x2="127.87" y2="24.64" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+  </g>
+
+  <!-- 12 Cardinal Hour/Minute Numbers -->
+  <g class="dial-labels">
+    <text x="140.00" y="45.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">00</text>
+    <text x="189.00" y="58.13" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">05</text>
+    <text x="224.87" y="94.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">10</text>
+    <text x="238.00" y="143.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">15</text>
+    <text x="224.87" y="192.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">20</text>
+    <text x="189.00" y="227.87" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">25</text>
+    <text x="140.00" y="241.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">30</text>
+    <text x="91.00" y="227.87" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">35</text>
+    <text x="55.13" y="192.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">40</text>
+    <text x="42.00" y="143.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">45</text>
+    <text x="55.13" y="94.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">50</text>
+    <text x="91.00" y="58.13" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">55</text>
+  </g>
+
+  <!-- Precision Progress Track (Ghost) -->
+  <circle cx="140" cy="140" r="82" fill="none" stroke="#E2E8F0" stroke-width="4" stroke-linecap="round" opacity="0.6" />
+  
+  <!-- Active Mars Green Progress Arc (24:52 elapsed) -->
+  <circle cx="140" cy="140" r="82" fill="none" stroke="url(#arcGreenGrad)" stroke-width="4.5" 
+    stroke-dasharray="515.22" stroke-dashoffset="130" stroke-linecap="round"
+    style="filter: drop-shadow(0 0 5px rgba(0,135,121,0.4));" />
+
+  <!-- Precision Indicator Pin/Cursor at Progress Head -->
+  <circle cx="140" cy="58" r="4" fill="#008779" stroke="#FFFFFF" stroke-width="2" />
+</svg>
+                <div class="dial-center-digits" style="position: relative;">
+                  <div class="pomo-status-tag" id="pomoStatusBadge"><span class="pomo-pulse-dot"></span> FOCUSING</div>
+                  <span class="pomo-time-number" id="pomoDigitDisplay" onclick="togglePomoQuickDurationPicker(event)" title="点击快速调节专注时长" style="cursor: pointer;">25:00</span>
+                  <div class="pomo-session-hint" id="pomoSessionHint">目标 25 分钟 · 点击时间快捷换时长</div>
+                  
+                  <!-- 快捷时长选择气泡 -->
+                  <div id="pomoQuickDurationPicker" class="pomo-quick-duration-bubble" style="display: none;" onclick="event.stopPropagation()">
+                    <span onclick="setQuickPomoMinutes(15)">15m</span>
+                    <span class="active" onclick="setQuickPomoMinutes(25)">25m</span>
+                    <span onclick="setQuickPomoMinutes(35)">35m</span>
+                    <span onclick="setQuickPomoMinutes(45)">45m</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 专注运行态控制按钮 -->
+              <div class="pomo-actions-row" id="pomoActionsRunning">
+                <button class="pomo-primary-btn" onclick="pausePomoTimer()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+                  <span>暂停专注</span>
+                </button>
+                <button class="pomo-secondary-btn" onclick="completePomoTaskEarly()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>提前完成并划线</span>
+                </button>
+              </div>
+
+              <!-- 专注暂停态三态分支 (继续 / 达成划线 / 放弃重置) -->
+              <div class="pomo-actions-row" id="pomoActionsPaused" style="display: none;">
+                <button class="pomo-primary-btn" style="background: var(--theme-primary); color: #fff; flex: 1.2;" onclick="resumePomoTimer()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>继续专注</span>
+                </button>
+                <button class="pomo-secondary-btn" style="background: var(--theme-subtle); color: var(--theme-primary); border-color: rgba(0,135,121,0.25); flex: 1;" onclick="completePomoTaskEarly()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>达成划线</span>
+                </button>
+                <button class="pomo-secondary-btn" style="background: #F8FAFC; color: #E74C3C; border-color: #E2E8F0; flex: 1;" onclick="abandonPomoTimer()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <span>放弃重置</span>
+                </button>
+              </div>
+
+              <!-- 离线白噪音声学微仓 (Web Audio 纯合成) -->
+              <div class="pomo-ambient-dock" id="pomoAmbientDock">
+                <div class="ambient-chip active" id="chipNoise_rain" onclick="selectAmbientNoise('rain')" title="清脆自然雨幕">
+                  <div class="sound-wave-bars"><span></span><span></span><span></span></div>
+                  <span>🌧️ 雨声</span>
+                </div>
+                <div class="ambient-chip" id="chipNoise_ocean" onclick="selectAmbientNoise('ocean')" title="潮汐呼吸海浪">
+                  <span>🌊 潮汐</span>
+                </div>
+                <div class="ambient-chip" id="chipNoise_pink" onclick="selectAmbientNoise('pink')" title="舒缓粉红暖噪">
+                  <span>☕ 暖噪</span>
+                </div>
+                <div class="ambient-chip" id="chipNoise_none" onclick="selectAmbientNoise('none')" title="关闭白噪音">
+                  <span>🔇 静音</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------
+               TAB 3: 复盘 (GTD 数据复盘)
+               ------------------------------------------------------------- -->
+          <div id="pageStats" class="screen-view-stats">
+            <div style="background: #FFFFFF; padding: 32px 16px 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light);">
+              <span style="font-size: 15px; font-weight: 700;">数据复盘回顾</span>
+              <span style="font-size: 12px; color: var(--theme-primary);">最近7天 ▾</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-around; background: #FFFFFF; padding: 10px 0; border-bottom: 1px solid var(--border-light); font-size: 11px;">
+              <span style="color: var(--theme-primary); font-weight: 700;">📋 昨日小结</span>
+              <span style="color: var(--text-secondary);">☑️ 事件统计</span>
+              <span style="color: var(--text-secondary);">🍅 番茄统计</span>
+              <span style="color: var(--text-secondary);">📊 周报</span>
+            </div>
+
+            <div class="stats-card-flow">
+              <div class="dual-metric-row">
+                <div class="metric-banner teal">
+                  <div style="font-size: 11px; opacity: 0.9;">事件工作量</div>
+                  <div style="font-size: 26px; font-weight: 800; margin: 4px 0;">28</div>
+                  <div style="font-size: 10px; opacity: 0.85;">相比前天 +23.5%</div>
+                </div>
+                <div class="metric-banner red">
+                  <div style="font-size: 11px; opacity: 0.9;">番茄专注时长</div>
+                  <div style="font-size: 26px; font-weight: 800; margin: 4px 0;">6.2h</div>
+                  <div style="font-size: 10px; opacity: 0.85;">相比前天 +11.23%</div>
+                </div>
+              </div>
+
+              <!-- 温和鼓励卡片 -->
+              <div style="background: #FFFBF0; border: 1px solid #FFEAA7; border-radius: 10px; padding: 12px; display: flex; gap: 10px; align-items: center;">
+                <span style="font-size: 26px;">😊</span>
+                <div style="font-size: 12px; color: #D35400; line-height: 1.4;">
+                  昨天达成了 <strong>5 个事件</strong>，工作量 <strong>23</strong>，远高于过去7天的平均水平 (+30.33%)！
+                </div>
+              </div>
+
+              <!-- 工作量趋势图 -->
+              <div style="background: #FFFFFF; border-radius: 10px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <div style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">工作量趋势</div>
+                <div style="font-size: 11px; color: var(--text-tertiary); margin-bottom: 8px;">基于本地数据实时生成</div>
+                <svg width="100%" height="90" viewBox="0 0 300 90">
+                  <defs>
+                    <linearGradient id="v1ChartGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="var(--theme-primary)" stop-opacity="0.3"/>
+                      <stop offset="100%" stop-color="var(--theme-primary)" stop-opacity="0.0"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M 10 65 Q 50 50 90 70 T 170 45 T 230 35 T 290 15 L 290 85 L 10 85 Z" fill="url(#v1ChartGrad)"/>
+                  <path d="M 10 65 Q 50 50 90 70 T 170 45 T 230 35 T 290 15" fill="none" stroke="var(--theme-primary)" stroke-width="2.5" stroke-linecap="round"/>
+                  <circle cx="290" cy="15" r="4" fill="var(--theme-primary)"/>
+                </svg>
+              </div>
+
+              <!-- 完成率圆环 -->
+              <div style="background: #FFFFFF; border-radius: 10px; padding: 14px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 13px; font-weight: 700; color: var(--text-main);">事件完成率</div>
+                  <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">本周达成率高达 <strong>95.5%</strong></div>
+                </div>
+                <div style="width: 52px; height: 52px; border-radius: 50%; border: 6px solid #F1F4F6; border-top-color: var(--theme-primary); border-right-color: var(--theme-primary); border-bottom-color: var(--theme-primary); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--theme-primary);">
+                  95%
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------
+               TAB 4: 我的 (本地模式 · 多彩主题随心换 · 本地JSON备份)
+               ------------------------------------------------------------- -->
+                    <div id="pageProfile" class="screen-view-profile">
+            <!-- 头部：居中头像与昵称 (参考图 1:1) -->
+            <div class="profile-hero-center">
+              <div class="profile-avatar-circle">
+                <svg width="74" height="74" viewBox="0 0 74 74">
+                  <defs>
+                    <linearGradient id="avatarSkyGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#60A5FA" />
+                      <stop offset="45%" stop-color="#F472B6" />
+                      <stop offset="85%" stop-color="#FB923C" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="74" height="74" fill="url(#avatarSkyGrad)" />
+                  <!-- 人像与落日剪影 -->
+                  <circle cx="37" cy="48" r="14" fill="#FDE68A" opacity="0.4" />
+                  <path d="M 37 18 C 43 18 47 23 47 29 C 47 35 42 39 37 39 C 32 39 27 35 27 29 C 27 23 31 18 37 18 Z" fill="#1E293B" />
+                  <path d="M 16 66 C 16 52 26 47 37 47 C 48 47 58 52 58 66 Z" fill="#0F766E" />
+                </svg>
+              </div>
+              <div class="profile-username-row">
+                <span class="profile-username-text">Vy</span>
+                <span class="profile-gender-badge">♂</span>
+              </div>
+            </div>
+
+            <div class="profile-content-body">
+              <!-- 卡片：我的徽章 (参考图 1:1) -->
+              <div class="profile-badges-card">
+                <div class="badges-card-header">
+                  <div class="badges-header-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                    <span>我的徽章</span>
+                  </div>
+                  <span class="badges-collapse-arrow" onclick="showPomoToast('已展示全部成就徽章')">⌃</span>
+                </div>
+
+                <div class="badges-grid-row">
+                  <!-- 徽章 1 (已点亮) -->
+                  <div class="badge-col-item" onclick="showBadgeDetail('时间掌控者', '已达成：连续 7 天完成每日艾利核心待办！', true)">
+                    <div class="badge-icon-frame active-badge">
+                      <svg width="30" height="30" viewBox="0 0 40 40">
+                        <polygon points="20,2 33,7 38,20 33,33 20,38 7,33 2,20 7,7" fill="#00E6CC" stroke="#FFFFFF" stroke-width="1.5"/>
+                        <circle cx="20" cy="14" r="3.2" fill="#FFFFFF"/>
+                        <path d="M14 27 C14 22 26 22 26 27" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="10" y1="20" x2="16" y2="24" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="30" y1="20" x2="24" y2="24" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <span class="badge-name-label">时间掌控者</span>
+                  </div>
+
+                  <!-- 徽章 2 (未解锁) -->
+                  <div class="badge-col-item" onclick="showBadgeDetail('专注魔王', '未解锁：累计专注满 50 小时点亮 (当前进度 18/50h)', false)">
+                    <div class="badge-icon-frame locked-badge">
+                      <svg width="30" height="30" viewBox="0 0 40 40">
+                        <polygon points="20,2 33,7 38,20 33,33 20,38 7,33 2,20 7,7" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="1.5"/>
+                        <circle cx="20" cy="20" r="6" fill="none" stroke="#94A3B8" stroke-width="2"/>
+                        <circle cx="20" cy="20" r="2.5" fill="#94A3B8"/>
+                      </svg>
+                    </div>
+                    <span class="badge-name-label" style="color: #94A3B8;">专注魔王</span>
+                  </div>
+
+                  <!-- 徽章 3 (未解锁) -->
+                  <div class="badge-col-item" onclick="showBadgeDetail('番茄富翁', '未解锁：单日完成 10 个有效番茄钟即可点亮 (今日已完成 4/10)', false)">
+                    <div class="badge-icon-frame locked-badge">
+                      <svg width="30" height="30" viewBox="0 0 40 40">
+                        <polygon points="20,2 33,7 38,20 33,33 20,38 7,33 2,20 7,7" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="1.5"/>
+                        <path d="M15 25 C14 18 26 18 25 25 Z" fill="#94A3B8"/>
+                        <line x1="20" y1="14" x2="20" y2="18" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                    </div>
+                    <span class="badge-name-label" style="color: #94A3B8;">番茄富翁</span>
+                  </div>
+
+                  <!-- 徽章 4 (未解锁) -->
+                  <div class="badge-col-item" onclick="showBadgeDetail('夜行侠', '未解锁：夜晚 22:00 之后完成 1 次有效专注即可点亮', false)">
+                    <div class="badge-icon-frame locked-badge">
+                      <svg width="30" height="30" viewBox="0 0 40 40">
+                        <polygon points="20,2 33,7 38,20 33,33 20,38 7,33 2,20 7,7" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="1.5"/>
+                        <path d="M22 13 A 7 7 0 1 0 25 25 A 6 6 0 0 1 22 13 Z" fill="#94A3B8"/>
+                      </svg>
+                    </div>
+                    <span class="badge-name-label" style="color: #94A3B8;">夜行侠</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 分组 1：数据与自持档案 (纯本地离线单机 · 零网络依赖) -->
+              <div class="profile-list-group">
+                <!-- 行 1: 本地个人档案 -->
+                <div class="profile-list-row" onclick="openProfileSheet()">
+                  <div class="row-left-content">
+                    <div class="row-item-icon" style="color: var(--theme-primary);">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="row-item-title">本地个人档案</div>
+                  </div>
+                  <div class="row-right-content">
+                    <span class="row-item-meta" id="profileNicknameMeta">Vy · 专注模式</span>
+                    <span class="row-item-chevron">›</span>
+                  </div>
+                </div>
+
+                <!-- 行 2: SQLite 本地数据库中心 -->
+                <div class="profile-list-row" onclick="openDatabaseCenterSheet()">
+                  <div class="row-left-content">
+                    <div class="row-item-icon" style="color: var(--theme-primary);">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    </div>
+                    <div class="row-item-title">SQLite 本地数据库中心</div>
+                  </div>
+                  <div class="row-right-content">
+                    <span class="row-item-meta" id="profileDbStatusMeta">SQLite 3 · 导出/备份</span>
+                    <span class="row-item-chevron">›</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 分组标题：个性化 (参考图 1:1) -->
+              <div class="profile-section-heading">个性化</div>
+
+              <!-- 分组 2：个性化设置 (参考图 1:1) -->
+              <div class="profile-list-group">
+                <!-- 行 1: 基本设置 (包含语言、外观暗黑切换) -->
+                <div class="profile-list-row" onclick="cycleGlobalAppearance()">
+                  <div class="row-left-content">
+                    <div class="row-item-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    </div>
+                    <div class="row-item-title">基本设置</div>
+                  </div>
+                  <div class="row-right-content">
+                    <span class="row-item-meta" id="rowAppearanceLabel">外观：浅色模式</span>
+                    <span class="row-item-chevron">›</span>
+                  </div>
+                </div>
+
+                <!-- 行 2: 主题色与风格 -->
+                <div class="profile-list-row" onclick="cycleThemeColor()">
+                  <div class="row-left-content">
+                    <div class="row-item-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                    </div>
+                    <div class="row-item-title">主题色与风格</div>
+                  </div>
+                  <div class="row-right-content">
+                    <span class="row-item-meta" id="rowThemeLabel">马尔斯绿 (默认)</span>
+                    <span class="row-item-chevron">›</span>
+                  </div>
+                </div>
+
+                <!-- 行 3: 待办与清单设置 (选项 A：拆分专业设置) -->
+                <div class="profile-list-row" onclick="openTaskRulesSheet()">
+                  <div class="row-left-content">
+                    <div class="row-item-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </div>
+                    <div class="row-item-title">待办与清单设置</div>
+                  </div>
+                  <div class="row-right-content">
+                    <span class="row-item-meta" id="profileTaskRulesMeta">艾利 1~5 排序 · 就地划线</span>
+                    <span class="row-item-chevron">›</span>
+                  </div>
+                </div>
+
+                <!-- 行 4: 专注与番茄设置 (选项 A：拆分专业设置) -->
+                <div class="profile-list-row" onclick="openPomoRulesSheet()">
+                  <div class="row-left-content">
+                    <div class="row-item-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="row-item-title">专注与番茄设置</div>
+                  </div>
+                  <div class="row-right-content">
+                    <span class="row-item-meta" id="profilePomoRulesMeta">25m 专注 · 5m 短休</span>
+                    <span class="row-item-chevron">›</span>
+                  </div>
+                </div>
+
+                <!-- 行 5: 语言切换 (方案 A：独立单行展示) -->
+                <div class="profile-list-row" onclick="openLanguageSheet()">
+                  <div class="row-left-content">
+                    <div class="row-item-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </div>
+                    <div class="row-item-title">语言 / Language</div>
+                  </div>
+                  <div class="row-right-content">
+                    <span class="row-item-meta" id="profileLanguageMeta">简体中文 (默认)</span>
+                    <span class="row-item-chevron">›</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 分组标题：关于与支持 -->
+              <div class="profile-section-heading">关于与支持</div>
+
+              <!-- 分组 3：关于与支持列表 -->
+              <div class="profile-list-group" style="margin-bottom: 24px;">
+                <!-- 行 1: 隐私协议入口 -->
+                <div class="profile-list-row" onclick="openPrivacySheet()">
+                  <div class="row-left-content">
+                    <div class="row-item-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
+                    <div class="row-item-title">隐私协议与数据合规</div>
+                  </div>
+                  <div class="row-right-content">
+                    <span class="row-item-meta">本地自持 · 零隐私上传</span>
+                    <span class="row-item-chevron">›</span>
+                  </div>
+                </div>
+
+                <!-- 行 2: 联系我们 (邮件方式) -->
+                <div class="profile-list-row" onclick="contactSupportEmail()">
+                  <div class="row-left-content">
+                    <div class="row-item-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    </div>
+                    <div class="row-item-title">联系我们</div>
+                  </div>
+                  <div class="row-right-content">
+                    <span class="row-item-meta" style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">chonggao9@gmail.com</span>
+                    <span class="row-item-chevron">›</span>
+                  </div>
+                </div>
+
+                <!-- 行 3: 版本信息 -->
+                <div class="profile-list-row" onclick="alert('PomoDo (Pomodoro × ToDo)\n版本：v1.0.0 (Build 2026.09)\n内核架构：SQLite 3 嵌入式存储引擎\n官方反馈邮箱：chonggao9@gmail.com')">
+                  <div class="row-left-content">
+                    <div class="row-item-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </div>
+                    <div class="row-item-title">关于与版本</div>
+                  </div>
+                  <div class="row-right-content">
+                    <span class="row-item-meta">v1.0.0 (Build 2026)</span>
+                    <span class="row-item-chevron">›</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 核心 Tab 底部导航栏 -->
+          <nav class="phone-bottom-nav">
+            <div id="tabNavToday" class="nav-tab-item active-tab" onclick="switchMobileTab('today')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              <span>清单</span>
+            </div>
+            <div id="tabNavPomo" class="nav-tab-item" onclick="switchMobileTab('pomo')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>专注</span>
+            </div>
+            <div id="tabNavStats" class="nav-tab-item" onclick="switchMobileTab('stats')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>复盘</span>
+            </div>
+            <div id="tabNavProfile" class="nav-tab-item" onclick="switchMobileTab('profile')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>我的</span>
+            </div>
+          </nav>
+          
+          <!-- 全屏沉浸模式退出按钮 -->
+          <button class="immersive-exit-btn" id="immersiveExitBtn" onclick="toggleFullscreenFocus()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span>退出全屏 (Esc/F)</span>
+          </button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         2. WEB DESKTOP WORKSPACE (4 CORE MODULES, LOCAL)
+         ========================================================= -->
+    <div id="viewWebSection" class="web-workspace-card">
+      <aside class="web-col-nav">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; background: var(--theme-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; letter-spacing: -0.5px;">PD</div>
+          <div>
+            <div style="font-weight: 800; font-size: 16px; color: var(--text-main); letter-spacing: -0.2px;">PomoDo</div>
+            <div style="font-size: 11px; color: var(--theme-primary); font-weight: 600;">Pomodoro × ToDo · 纯本地版</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size: 11px; text-transform: uppercase; color: var(--text-tertiary); font-weight: 700; margin-bottom: 6px;">核心模块</div>
+          <div style="display: flex; flex-direction: column; gap: 3px; font-size: 13px;">
+            <div style="padding: 8px 10px; border-radius: 8px; background: var(--theme-light); color: var(--theme-primary); font-weight: 700; display: flex; justify-content: space-between;">
+              <span>📋 清单 (待办)</span>
+              <span>4</span>
+            </div>
+            <div style="padding: 8px 10px; border-radius: 8px; color: var(--text-regular); display: flex; justify-content: space-between;">
+              <span>🍅 专注 (番茄钟)</span>
+              <span style="color: var(--text-tertiary);">24:52</span>
+            </div>
+            <div style="padding: 8px 10px; border-radius: 8px; color: var(--text-regular);">
+              <span>📊 复盘 (报表)</span>
+            </div>
+            <div style="padding: 8px 10px; border-radius: 8px; color: var(--text-regular);">
+              <span>👤 我的 (设置)</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex: 1;">
+          <div style="font-size: 11px; text-transform: uppercase; color: var(--text-tertiary); font-weight: 700; margin-bottom: 6px;">本地清单分类</div>
+          <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-regular);">
+            <div style="padding: 6px 10px; display: flex; align-items: center; gap: 8px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #008779;"></span>工作项目</div>
+            <div style="padding: 6px 10px; display: flex; align-items: center; gap: 8px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #E67E22;"></span>生活出行</div>
+            <div style="padding: 6px 10px; display: flex; align-items: center; gap: 8px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #27AE60;"></span>健康运动</div>
+          </div>
+        </div>
+
+        <div style="padding: 10px; background: #FFFFFF; border: 1px solid var(--border-light); border-radius: 8px; font-size: 11px;">
+          <div style="color: var(--theme-primary); font-weight: 700;">💾 SQLite 3 本地嵌入库</div>
+          <div style="color: var(--text-secondary); margin-top: 2px;">pomodo_master.db · 自动迁移</div>
+        </div>
+      </aside>
+
+      <section class="web-col-center">
+        <div style="padding: 20px 28px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 20px; font-weight: 800; color: var(--text-main);">今日待办 (艾利优先序 1~5)</div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">彻底极简 · Things 3 雅致质感 · 马尔斯绿点缀</div>
+          </div>
+          <button style="border: 1px solid var(--border-light); background: #fff; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--theme-primary); display: flex; align-items: center; gap: 6px;" onclick="exportLocalDbFile()">
+            <span>💾</span>
+            <span>导出 SQLite (.db)</span>
+          </button>
+        </div>
+
+        <!-- 方案 C：Web 端双模快捷输入 -->
+        <div style="padding: 12px 28px; background: #F8FAF9; border-bottom: 1px solid var(--border-light);">
+          <div style="background: #fff; border: 1px solid #DCE2E6; border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; gap: 10px;">
+            <span style="color: var(--theme-primary); font-size: 16px;">+</span>
+            <input id="webQuickInput" style="flex: 1; border: none; outline: none; font-size: 13px;" placeholder="快速输入待办，按下 Enter 直接添加..." onkeypress="if(event.key==='Enter') addWebTask()" />
+            <button style="background: var(--theme-primary); color: #fff; border: none; font-size: 11px; padding: 5px 12px; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="addWebTask()">添加</button>
+          </div>
+        </div>
+
+        <div class="task-stream-list" id="webTaskStream" style="padding: 16px 28px;">
+          <!-- Task 1 -->
+          <div class="pure-task-card" onclick="toggleTaskStrike(this)">
+            <div class="pure-checkbox" onclick="event.stopPropagation(); toggleTaskStrike(this.parentElement)"></div>
+            <div class="pure-task-body">
+              <div class="pure-task-text">早起晨跑与拉伸</div>
+              <div class="pure-task-meta">
+                <span>⏰ 7:25</span>
+                <span>·</span>
+                <span class="meta-pill-sub">晨练打卡</span>
+              </div>
+            </div>
+            <div class="pure-ivy-num">1</div>
+          </div>
+
+          <!-- Task 2 -->
+          <div class="pure-task-card" onclick="toggleTaskStrike(this)">
+            <div class="pure-checkbox" onclick="event.stopPropagation(); toggleTaskStrike(this.parentElement)"></div>
+            <div class="pure-task-body">
+              <div class="pure-task-text">与赵总吃中饭</div>
+              <div class="pure-task-meta">
+                <span>⏰ 12:00</span>
+                <span>·</span>
+                <span style="color: #64748B;">📍 湖滨银泰城</span>
+              </div>
+            </div>
+            <div class="pure-ivy-num">2</div>
+          </div>
+
+          <!-- Task 3 -->
+          <div class="pure-task-card" onclick="toggleTaskStrike(this)">
+            <div class="pure-checkbox" onclick="event.stopPropagation(); toggleTaskStrike(this.parentElement)"></div>
+            <div class="pure-task-body">
+              <div class="pure-task-text">14:00 部门月度会议</div>
+              <div class="pure-task-meta">
+                <span>⏰ 14:00</span>
+                <span>·</span>
+                <span class="meta-pill-sub">☑ 2/3 子任务</span>
+              </div>
+            </div>
+            <div class="pure-ivy-num">3</div>
+          </div>
+
+          <!-- Task 4 (已完成示范) -->
+          <div class="pure-task-card is-completed" onclick="toggleTaskStrike(this)">
+            <div class="pure-checkbox checked" onclick="event.stopPropagation(); toggleTaskStrike(this.parentElement)">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="pure-task-body">
+              <div class="pure-task-text">🏖️ 订两张三亚的机票</div>
+              <div class="pure-task-meta">
+                <span>已完成 · 原地保留</span>
+              </div>
+            </div>
+            <div class="pure-ivy-num" style="opacity: 0.4;">4</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Web Right Detail Panel -->
+      <aside class="web-col-detail">
+        <div style="font-size: 13px; font-weight: 700; color: var(--text-main); border-bottom: 1px solid var(--border-light); padding-bottom: 12px; display: flex; justify-content: space-between;">
+          <span>任务详情与工作量</span>
+          <span style="color: var(--theme-primary); cursor: pointer;">保存</span>
+        </div>
+
+        <input style="font-size: 16px; font-weight: 700; border: none; outline: none; width: 100%;" value="14:00 部门月度会议" />
+
+        <div style="display: flex; gap: 8px;">
+          <span class="date-pill-btn active">今天 14:00</span>
+          <span class="date-pill-btn">工作清单</span>
+        </div>
+
+        <div class="workload-bar-box" style="margin-top: 8px;">
+          <span style="font-size: 12px; color: var(--text-regular); font-weight: 600;">艾利工作量评估</span>
+          <div class="workload-segmented-ctrl">
+            <button class="workload-choice">一般</button>
+            <button class="workload-choice">中等难度</button>
+            <button class="workload-choice active-red">较高难度</button>
+          </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, var(--theme-subtle) 0%, #FFFFFF 100%); border: 1px solid var(--theme-light); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; font-weight: 700; color: var(--theme-primary);">🍅 拟物番茄专注钟</span>
+            <span style="font-size: 11px; color: var(--text-secondary);">24:52</span>
+          </div>
+          <button style="background: var(--theme-primary); color: #FFFFFF; border: none; font-size: 12px; font-weight: 700; padding: 8px; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 8px var(--theme-shadow);">
+            开始当前任务沉浸专注
+          </button>
+        </div>
+      </aside>
+    </div>
+
+
+    <!-- =========================================================
+         3. DUAL POMODORO STYLE SIDE-BY-SIDE COMPARE SECTION
+         ========================================================= -->
+    <div id="viewCompareSection" class="compare-container">
+      <div style="text-align: center; margin-bottom: 8px;">
+        <div style="font-size: 22px; font-weight: 800; color: #0F172A; letter-spacing: -0.5px;">专注钟两种设计风骨 · 同屏实机横评对比</div>
+        <div style="font-size: 13px; color: #64748B; margin-top: 4px;">方向 A（博朗 Dieter Rams 白瓷工业精密）vs 方向 B（Teenage Engineering 极客深邃暗室）</div>
+      </div>
+
+      <div class="compare-dual-phones">
+        <!-- Phone 1: 方向 A (白瓷精密仪) -->
+        <div class="compare-card-col">
+          <div class="compare-title-badge">
+            <span>☀️ 方向 A：博朗白瓷精密仪</span>
+            <span style="font-size: 11px; color: var(--theme-primary); background: var(--theme-subtle); padding: 1px 8px; border-radius: 999px;">纯白秩序 · 实体工业感</span>
+          </div>
+
+          <div class="phone-mockup" style="transform: none; margin: 0; box-shadow: 0 20px 48px rgba(15,23,42,0.12);">
+            <div class="phone-status-header">
+              <span>22:06</span>
+              <div style="display: flex; gap: 4px; align-items: center;"><span>5G</span><span>100%</span></div>
+            </div>
+            <div class="phone-viewport" style="background: #FFFFFF;">
+              <div class="pomo-minimal-header">
+                <div class="pomo-back-btn"><span>‹ 返回待办</span></div>
+                <div class="pomo-focus-target"><span class="pomo-target-dot"></span><span>14:00 部门月度会议</span></div>
+                <div style="width: 30px;"></div>
+              </div>
+              <div class="pomo-clock-stage" style="padding-top: 20px;">
+                <div class="clock-outer-dial">
+                  <svg class="clock-svg-ticks" viewBox="0 0 280 280">
+  <defs>
+    <radialGradient id="dialFaceGradient" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="70%" stop-color="#FAFCFD" />
+      <stop offset="100%" stop-color="#F1F5F9" />
+    </radialGradient>
+    <linearGradient id="arcGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00A896" />
+      <stop offset="100%" stop-color="#008779" />
+    </linearGradient>
+  </defs>
+
+  <!-- Dial Base Plate with Subtle Chamfer -->
+  <circle cx="140" cy="140" r="132" fill="url(#dialFaceGradient)" stroke="#E2E8F0" stroke-width="1.5" />
+  <circle cx="140" cy="140" r="127" fill="none" stroke="#FFFFFF" stroke-width="1.5" />
+
+  <!-- 60 Precision Radial Ticks -->
+  <g class="dial-ticks">
+    <line x1="140.00" y1="16.00" x2="140.00" y2="30.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="152.96" y1="16.68" x2="152.13" y2="24.64" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="165.78" y1="18.71" x2="164.12" y2="26.53" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="178.32" y1="22.07" x2="175.85" y2="29.68" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="190.44" y1="26.72" x2="187.18" y2="34.03" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="202.00" y1="32.61" x2="195.00" y2="44.74" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="212.89" y1="39.68" x2="208.18" y2="46.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="222.97" y1="47.85" x2="217.62" y2="53.80" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="232.15" y1="57.03" x2="226.20" y2="62.38" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="240.32" y1="67.11" x2="233.85" y2="71.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="247.39" y1="78.00" x2="235.26" y2="85.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="253.28" y1="89.56" x2="245.97" y2="92.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="257.93" y1="101.68" x2="250.32" y2="104.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="261.29" y1="114.22" x2="253.47" y2="115.88" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="263.32" y1="127.04" x2="255.36" y2="127.87" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="264.00" y1="140.00" x2="250.00" y2="140.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="263.32" y1="152.96" x2="255.36" y2="152.13" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="261.29" y1="165.78" x2="253.47" y2="164.12" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="257.93" y1="178.32" x2="250.32" y2="175.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="253.28" y1="190.44" x2="245.97" y2="187.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="247.39" y1="202.00" x2="235.26" y2="195.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="240.32" y1="212.89" x2="233.85" y2="208.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="232.15" y1="222.97" x2="226.20" y2="217.62" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="222.97" y1="232.15" x2="217.62" y2="226.20" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="212.89" y1="240.32" x2="208.18" y2="233.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="202.00" y1="247.39" x2="195.00" y2="235.26" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="190.44" y1="253.28" x2="187.18" y2="245.97" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="178.32" y1="257.93" x2="175.85" y2="250.32" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="165.78" y1="261.29" x2="164.12" y2="253.47" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="152.96" y1="263.32" x2="152.13" y2="255.36" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="140.00" y1="264.00" x2="140.00" y2="250.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="127.04" y1="263.32" x2="127.87" y2="255.36" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="114.22" y1="261.29" x2="115.88" y2="253.47" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="101.68" y1="257.93" x2="104.15" y2="250.32" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="89.56" y1="253.28" x2="92.82" y2="245.97" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="78.00" y1="247.39" x2="85.00" y2="235.26" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="67.11" y1="240.32" x2="71.82" y2="233.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="57.03" y1="232.15" x2="62.38" y2="226.20" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="47.85" y1="222.97" x2="53.80" y2="217.62" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="39.68" y1="212.89" x2="46.15" y2="208.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="32.61" y1="202.00" x2="44.74" y2="195.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="26.72" y1="190.44" x2="34.03" y2="187.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="22.07" y1="178.32" x2="29.68" y2="175.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="18.71" y1="165.78" x2="26.53" y2="164.12" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="16.68" y1="152.96" x2="24.64" y2="152.13" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="16.00" y1="140.00" x2="30.00" y2="140.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="16.68" y1="127.04" x2="24.64" y2="127.87" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="18.71" y1="114.22" x2="26.53" y2="115.88" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="22.07" y1="101.68" x2="29.68" y2="104.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="26.72" y1="89.56" x2="34.03" y2="92.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="32.61" y1="78.00" x2="44.74" y2="85.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="39.68" y1="67.11" x2="46.15" y2="71.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="47.85" y1="57.03" x2="53.80" y2="62.38" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="57.03" y1="47.85" x2="62.38" y2="53.80" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="67.11" y1="39.68" x2="71.82" y2="46.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="78.00" y1="32.61" x2="85.00" y2="44.74" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="89.56" y1="26.72" x2="92.82" y2="34.03" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="101.68" y1="22.07" x2="104.15" y2="29.68" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="114.22" y1="18.71" x2="115.88" y2="26.53" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="127.04" y1="16.68" x2="127.87" y2="24.64" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+  </g>
+
+  <!-- 12 Cardinal Hour/Minute Numbers -->
+  <g class="dial-labels">
+    <text x="140.00" y="45.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">00</text>
+    <text x="189.00" y="58.13" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">05</text>
+    <text x="224.87" y="94.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">10</text>
+    <text x="238.00" y="143.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">15</text>
+    <text x="224.87" y="192.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">20</text>
+    <text x="189.00" y="227.87" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">25</text>
+    <text x="140.00" y="241.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">30</text>
+    <text x="91.00" y="227.87" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">35</text>
+    <text x="55.13" y="192.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">40</text>
+    <text x="42.00" y="143.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">45</text>
+    <text x="55.13" y="94.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">50</text>
+    <text x="91.00" y="58.13" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">55</text>
+  </g>
+
+  <!-- Precision Progress Track (Ghost) -->
+  <circle cx="140" cy="140" r="82" fill="none" stroke="#E2E8F0" stroke-width="4" stroke-linecap="round" opacity="0.6" />
+  
+  <!-- Active Mars Green Progress Arc (24:52 elapsed) -->
+  <circle cx="140" cy="140" r="82" fill="none" stroke="url(#arcGreenGrad)" stroke-width="4.5" 
+    stroke-dasharray="515.22" stroke-dashoffset="130" stroke-linecap="round"
+    style="filter: drop-shadow(0 0 5px rgba(0,135,121,0.4));" />
+
+  <!-- Precision Indicator Pin/Cursor at Progress Head -->
+  <circle cx="140" cy="58" r="4" fill="#008779" stroke="#FFFFFF" stroke-width="2" />
+</svg>
+                  <div class="dial-center-digits">
+                    <div class="pomo-status-tag"><span class="pomo-pulse-dot"></span> FOCUSING</div>
+                    <span class="pomo-time-number">24:52</span>
+                    <div class="pomo-session-hint">目标 25 分钟 · 保持专注</div>
+                  </div>
+                </div>
+                <div class="pomo-actions-row">
+                  <button class="pomo-primary-btn"><span>⏸ 暂停专注</span></button>
+                  <button class="pomo-secondary-btn"><span>✓ 提前完成</span></button>
+                </div>
+                <div class="pomo-ambient-dock">
+                  <div class="ambient-chip active"><div class="sound-wave-bars"><span></span><span></span><span></span></div><span>雨声</span></div>
+                  <div class="ambient-chip"><span>☕ 咖啡馆</span></div>
+                  <div class="ambient-chip"><span>🌲 森林</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phone 2: 方向 B (深邃心流暗室) -->
+        <div class="compare-card-col">
+          <div class="compare-title-badge" style="background: #0F172A; color: #F8FAFC; border-color: #334155;">
+            <span>🌙 方向 B：深邃心流暗室</span>
+            <span style="font-size: 11px; color: #00E6CC; background: rgba(0,230,204,0.15); padding: 1px 8px; border-radius: 999px;">极客夜光 · 消除干扰</span>
+          </div>
+
+          <div class="phone-mockup" style="transform: none; margin: 0; background: #000000; border-color: #27272A; box-shadow: 0 20px 60px rgba(0,0,0,0.6);">
+            <div class="phone-status-header" style="color: #94A3B8;">
+              <span>22:06</span>
+              <div style="display: flex; gap: 4px; align-items: center;"><span>5G</span><span>100%</span></div>
+            </div>
+            <div class="phone-viewport pomo-dark-mode" style="background: #0B0F14;">
+              <div class="pomo-minimal-header">
+                <div class="pomo-back-btn"><span>‹ 返回待办</span></div>
+                <div class="pomo-focus-target"><span class="pomo-target-dot"></span><span>14:00 部门月度会议</span></div>
+                <div style="width: 30px;"></div>
+              </div>
+              <div class="pomo-clock-stage" style="padding-top: 20px;">
+                <div class="clock-outer-dial">
+                  <svg class="clock-svg-ticks" viewBox="0 0 280 280">
+  <defs>
+    <radialGradient id="dialFaceGradient" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="70%" stop-color="#FAFCFD" />
+      <stop offset="100%" stop-color="#F1F5F9" />
+    </radialGradient>
+    <linearGradient id="arcGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00A896" />
+      <stop offset="100%" stop-color="#008779" />
+    </linearGradient>
+  </defs>
+
+  <!-- Dial Base Plate with Subtle Chamfer -->
+  <circle cx="140" cy="140" r="132" fill="url(#dialFaceGradient)" stroke="#E2E8F0" stroke-width="1.5" />
+  <circle cx="140" cy="140" r="127" fill="none" stroke="#FFFFFF" stroke-width="1.5" />
+
+  <!-- 60 Precision Radial Ticks -->
+  <g class="dial-ticks">
+    <line x1="140.00" y1="16.00" x2="140.00" y2="30.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="152.96" y1="16.68" x2="152.13" y2="24.64" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="165.78" y1="18.71" x2="164.12" y2="26.53" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="178.32" y1="22.07" x2="175.85" y2="29.68" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="190.44" y1="26.72" x2="187.18" y2="34.03" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="202.00" y1="32.61" x2="195.00" y2="44.74" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="212.89" y1="39.68" x2="208.18" y2="46.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="222.97" y1="47.85" x2="217.62" y2="53.80" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="232.15" y1="57.03" x2="226.20" y2="62.38" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="240.32" y1="67.11" x2="233.85" y2="71.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="247.39" y1="78.00" x2="235.26" y2="85.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="253.28" y1="89.56" x2="245.97" y2="92.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="257.93" y1="101.68" x2="250.32" y2="104.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="261.29" y1="114.22" x2="253.47" y2="115.88" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="263.32" y1="127.04" x2="255.36" y2="127.87" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="264.00" y1="140.00" x2="250.00" y2="140.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="263.32" y1="152.96" x2="255.36" y2="152.13" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="261.29" y1="165.78" x2="253.47" y2="164.12" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="257.93" y1="178.32" x2="250.32" y2="175.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="253.28" y1="190.44" x2="245.97" y2="187.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="247.39" y1="202.00" x2="235.26" y2="195.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="240.32" y1="212.89" x2="233.85" y2="208.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="232.15" y1="222.97" x2="226.20" y2="217.62" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="222.97" y1="232.15" x2="217.62" y2="226.20" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="212.89" y1="240.32" x2="208.18" y2="233.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="202.00" y1="247.39" x2="195.00" y2="235.26" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="190.44" y1="253.28" x2="187.18" y2="245.97" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="178.32" y1="257.93" x2="175.85" y2="250.32" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="165.78" y1="261.29" x2="164.12" y2="253.47" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="152.96" y1="263.32" x2="152.13" y2="255.36" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="140.00" y1="264.00" x2="140.00" y2="250.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="127.04" y1="263.32" x2="127.87" y2="255.36" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="114.22" y1="261.29" x2="115.88" y2="253.47" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="101.68" y1="257.93" x2="104.15" y2="250.32" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="89.56" y1="253.28" x2="92.82" y2="245.97" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="78.00" y1="247.39" x2="85.00" y2="235.26" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="67.11" y1="240.32" x2="71.82" y2="233.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="57.03" y1="232.15" x2="62.38" y2="226.20" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="47.85" y1="222.97" x2="53.80" y2="217.62" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="39.68" y1="212.89" x2="46.15" y2="208.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="32.61" y1="202.00" x2="44.74" y2="195.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="26.72" y1="190.44" x2="34.03" y2="187.18" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="22.07" y1="178.32" x2="29.68" y2="175.85" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="18.71" y1="165.78" x2="26.53" y2="164.12" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="16.68" y1="152.96" x2="24.64" y2="152.13" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="16.00" y1="140.00" x2="30.00" y2="140.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="16.68" y1="127.04" x2="24.64" y2="127.87" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="18.71" y1="114.22" x2="26.53" y2="115.88" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="22.07" y1="101.68" x2="29.68" y2="104.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="26.72" y1="89.56" x2="34.03" y2="92.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="32.61" y1="78.00" x2="44.74" y2="85.00" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="39.68" y1="67.11" x2="46.15" y2="71.82" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="47.85" y1="57.03" x2="53.80" y2="62.38" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="57.03" y1="47.85" x2="62.38" y2="53.80" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="67.11" y1="39.68" x2="71.82" y2="46.15" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="78.00" y1="32.61" x2="85.00" y2="44.74" stroke="#334155" stroke-width="2" stroke-linecap="round" />
+    <line x1="89.56" y1="26.72" x2="92.82" y2="34.03" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="101.68" y1="22.07" x2="104.15" y2="29.68" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="114.22" y1="18.71" x2="115.88" y2="26.53" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="127.04" y1="16.68" x2="127.87" y2="24.64" stroke="#CBD5E1" stroke-width="1.2" stroke-linecap="round" />
+  </g>
+
+  <!-- 12 Cardinal Hour/Minute Numbers -->
+  <g class="dial-labels">
+    <text x="140.00" y="45.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">00</text>
+    <text x="189.00" y="58.13" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">05</text>
+    <text x="224.87" y="94.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">10</text>
+    <text x="238.00" y="143.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">15</text>
+    <text x="224.87" y="192.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">20</text>
+    <text x="189.00" y="227.87" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">25</text>
+    <text x="140.00" y="241.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">30</text>
+    <text x="91.00" y="227.87" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">35</text>
+    <text x="55.13" y="192.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">40</text>
+    <text x="42.00" y="143.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">45</text>
+    <text x="55.13" y="94.00" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">50</text>
+    <text x="91.00" y="58.13" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748B" font-family="'JetBrains Mono', monospace">55</text>
+  </g>
+
+  <!-- Precision Progress Track (Ghost) -->
+  <circle cx="140" cy="140" r="82" fill="none" stroke="#E2E8F0" stroke-width="4" stroke-linecap="round" opacity="0.6" />
+  
+  <!-- Active Mars Green Progress Arc (24:52 elapsed) -->
+  <circle cx="140" cy="140" r="82" fill="none" stroke="url(#arcGreenGrad)" stroke-width="4.5" 
+    stroke-dasharray="515.22" stroke-dashoffset="130" stroke-linecap="round"
+    style="filter: drop-shadow(0 0 5px rgba(0,135,121,0.4));" />
+
+  <!-- Precision Indicator Pin/Cursor at Progress Head -->
+  <circle cx="140" cy="58" r="4" fill="#008779" stroke="#FFFFFF" stroke-width="2" />
+</svg>
+                  <div class="dial-center-digits">
+                    <div class="pomo-status-tag"><span class="pomo-pulse-dot"></span> FOCUSING</div>
+                    <span class="pomo-time-number">24:52</span>
+                    <div class="pomo-session-hint">目标 25 分钟 · 保持专注</div>
+                  </div>
+                </div>
+                <div class="pomo-actions-row">
+                  <button class="pomo-primary-btn"><span>⏸ 暂停专注</span></button>
+                  <button class="pomo-secondary-btn"><span>✓ 提前完成</span></button>
+                </div>
+                <div class="pomo-ambient-dock">
+                  <div class="ambient-chip active"><div class="sound-wave-bars"><span></span><span></span><span></span></div><span>雨声</span></div>
+                  <div class="ambient-chip"><span>☕ 咖啡馆</span></div>
+                  <div class="ambient-chip"><span>🌲 森林</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+  
+  <!-- 桌面快捷键说明浮层 -->
+  <div id="keyboardShortcutsOverlay" class="keyboard-shortcuts-overlay" onclick="if(event.target===this)closeShortcutsHelp()">
+    <div class="shortcuts-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-light); padding-bottom:10px;">
+        <span style="font-size:14px; font-weight:700;">⌨️ 桌面快捷键指南</span>
+        <span style="cursor:pointer; font-size:16px; color:var(--text-tertiary);" onclick="closeShortcutsHelp()">✕</span>
+      </div>
+      <div class="shortcut-row">
+        <span>暂停 / 继续当前专注</span>
+        <span class="shortcut-key-badge">Space</span>
+      </div>
+      <div class="shortcut-row">
+        <span>切换到 清单 / 专注 / 复盘 / 我的</span>
+        <span class="shortcut-key-badge">1 ~ 4</span>
+      </div>
+      <div class="shortcut-row">
+        <span>全屏沉浸专注模式</span>
+        <span class="shortcut-key-badge">F</span>
+      </div>
+      <div class="shortcut-row">
+        <span>快速新建待办抽屉</span>
+        <span class="shortcut-key-badge">N</span>
+      </div>
+      <div class="shortcut-row">
+        <span>关闭所有浮层与抽屉</span>
+        <span class="shortcut-key-badge">Esc</span>
+      </div>
+      <div class="shortcut-row">
+        <span>打开快捷键说明</span>
+        <span class="shortcut-key-badge">?</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

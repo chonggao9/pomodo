@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── 用户 ───────────────────────────────────────────────
+model User {
+  id          String    @id @default(cuid())
+  phone       String?   @unique
+  email       String?   @unique
+  nickname    String    @default("FlowTask用户")
+  avatar      String?
+  passwordHash String?
+  isPro       Boolean   @default(false)
+  proExpireAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tasks       Task[]
+  lists       List[]
+  tags        Tag[]
+  pomodoros   Pomodoro[]
+  devices     Device[]
+
+  @@map("users")
+}
+
+// ─── 清单 ───────────────────────────────────────────────
+model List {
+  id          String  @id @default(cuid())
+  userId      String
+  name        String
+  color       String  @default("#009b9c")
+  icon        String?
+  sortOrder   Float   @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks       Task[]
+
+  @@map("lists")
+}
+
+// ─── 标签 ───────────────────────────────────────────────
+model Tag {
+  id          String  @id @default(cuid())
+  userId      String
+  name        String
+  color       String  @default("#6B7280")
+
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks       TaskTag[]
+
+  @@unique([userId, name])
+  @@map("tags")
+}
+
+// ─── 任务 ───────────────────────────────────────────────
+model Task {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  note        String?
+  dueDate     DateTime?
+  dueTime     String?   // "HH:mm" 格式
+  priority    Int       @default(4)    // 1=最高P1 ~ 4=最低P4
+  status      TaskStatus @default(TODO)
+  section     TaskSection @default(INBOX) // 今天/明天/收件箱/将来
+  parentId    String?   // 子任务
+  listId      String?
+  sortOrder   Float     @default(0)
+  repeatRule  String?   // cron 表达式，null=不重复
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  list        List?     @relation(fields: [listId], references: [id], onDelete: SetNull)
+  parent      Task?     @relation("SubTasks", fields: [parentId], references: [id])
+  children    Task[]    @relation("SubTasks")
+  tags        TaskTag[]
+  pomodoros   Pomodoro[]
+
+  @@index([userId, section, status])
+  @@index([userId, dueDate])
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  TODO
+  DONE
+  CANCELLED
+}
+
+enum TaskSection {
+  TODAY
+  TOMORROW
+  INBOX
+  SOMEDAY
+}
+
+// ─── 任务-标签关联 ───────────────────────────────────────
+model TaskTag {
+  taskId      String
+  tagId       String
+
+  task        Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag         Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, tagId])
+  @@map("task_tags")
+}
+
+// ─── 番茄记录 ───────────────────────────────────────────
+model Pomodoro {
+  id          String   @id @default(cuid())
+  userId      String
+  taskId      String?
+  duration    Int      // 分钟
+  type        PomodoroType @default(WORK)
+  startedAt   DateTime
+  endedAt     DateTime?
+  interrupted Boolean  @default(false)
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([userId, startedAt])
+  @@map("pomodoros")
+}
+
+enum PomodoroType {
+  WORK
+  SHORT_BREAK
+  LONG_BREAK
+}
+
+// ─── 设备（多端同步） ────────────────────────────────────
+model Device {
+  id           String   @id @default(cuid())
+  userId       String
+  deviceName   String
+  platform     Platform
+  pushToken    String?
+  lastSyncAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("devices")
+}
+
+enum Platform {
+  ANDROID
+  IOS
+  WEB
+  HARMONYOS
+  WINDOWS
+  MACOS
+}

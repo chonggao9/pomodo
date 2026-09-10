@@ -1,0 +1,43 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build outputs & Bundles
+dist/
+build/
+out/
+*.apk
+*.aab
+*.zip
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+
+# Android
+**/.gradle/
+**/local.properties
+**/captures/
+**/gradle-app.setting
+**/.externalNativeBuild
+
+# IDE & OS
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.production

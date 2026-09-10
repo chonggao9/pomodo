@@ -1,0 +1,2583 @@
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap');
+
+    :root {
+      /* 当前主题色（默认马尔斯绿） */
+      --theme-primary: #008779;
+      --theme-dark: #006D62;
+      --theme-darker: #004D40;
+      --theme-light: #E0F2F1;
+      --theme-subtle: #E8F5F4;
+      --theme-shadow: rgba(0, 135, 121, 0.28);
+
+      /* 界面基底（清爽雅致纯白底） */
+      --bg-page: #F4F6F9;
+      --bg-surface: #FFFFFF;
+      --border-light: #E9ECEF;
+      --border-subtle: #F1F3F5;
+
+      /* 文字排版 */
+      --text-main: #2C3E50;
+      --text-regular: #4A5568;
+      --text-secondary: #7F8C8D;
+      --text-tertiary: #A0AEC0;
+      --text-white: #FFFFFF;
+
+      /* 艾利时间管理法优先度色彩 */
+      --ivy-red: #E74C3C;
+      --ivy-cyan: #16A085;
+      --ivy-blue: #2980B9;
+      --ivy-orange: #E67E22;
+      --color-success: #27AE60;
+
+      /* 阴影 */
+      --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-float: 0 8px 24px var(--theme-shadow);
+      --shadow-sheet: 0 -12px 36px rgba(0, 0, 0, 0.18);
+
+      /* Emil Kowalski 设计工程标准：权威缓动曲线与时间 Tokens */
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);        /* 强劲爆发与极细腻减速，UI 交互黄金标准 */
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);    /* 屏幕平移/形变 */
+      --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);     /* iOS 物理抽屉曲线 (Ionic/Vaul) */
+      --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.2); /* 微触觉回弹 */
+
+      --dur-press: 140ms;
+      --dur-quick: 180ms;
+      --dur-ui: 240ms;
+      --dur-drawer: 300ms;
+
+      --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "PingFang SC", "HarmonyOS Sans SC", "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Review & Mode Controller */
+    .top-controller-bar {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-light);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .brand-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--theme-primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      box-shadow: 0 3px 8px var(--theme-shadow);
+      transition: background-color var(--dur-ui) var(--ease-out), transform var(--dur-press) var(--ease-out);
+    }
+    .brand-badge-icon:active {
+      transform: scale(0.94);
+    }
+
+    .brand-main-heading {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill-confirmed-spec {
+      font-size: 11px;
+      padding: 2px 8px;
+      background: var(--theme-light);
+      color: var(--theme-primary);
+      border-radius: 999px;
+      font-weight: 700;
+      transition: background-color var(--dur-ui) var(--ease-out), color var(--dur-ui) var(--ease-out);
+    }
+
+    .view-mode-tabs {
+      display: flex;
+      background: #EDF2F7;
+      padding: 3px;
+      border-radius: 8px;
+      gap: 3px;
+    }
+
+    .view-mode-btn {
+      background: transparent;
+      border: none;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-regular);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), transform var(--dur-press) var(--ease-out);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .view-mode-btn:active {
+      transform: scale(0.96);
+    }
+
+    .view-mode-btn.active {
+      background: #FFFFFF;
+      color: var(--theme-primary);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+    }
+
+    /* Main Showcase Stage */
+    .prototype-stage {
+      flex: 1;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    /* =========================================================
+       MOBILE PHONE SHELL & 4 CORE TABS
+       ========================================================= */
+    .mobile-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .top-sub-bar {
+      display: flex;
+      gap: 6px;
+      background: #FFFFFF;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .top-sub-tab {
+      border: none;
+      background: transparent;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), transform var(--dur-press) var(--ease-out);
+    }
+
+    .top-sub-tab:active {
+      transform: scale(0.95);
+    }
+
+    .top-sub-tab.active {
+      background: var(--theme-primary);
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px var(--theme-shadow);
+    }
+
+    /* Phone Mockup */
+    .phone-mockup {
+      width: 385px;
+      height: 790px;
+      background: #FFFFFF;
+      border-radius: 46px;
+      border: 10px solid #273142;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.16);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* =========================================================
+       方案 A：THINGS 3 / LINEAR 极简雅致设计系统
+       ========================================================= */
+    .phone-status-header {
+      height: 28px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 22px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #0F172A;
+      background: transparent;
+    }
+
+    .phone-viewport {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* -------------------------------------------------------------
+       TAB 1: 清单 (Things 3 通透留白大标题 + 纯净任务流)
+       ------------------------------------------------------------- */
+    .screen-view-today {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #FFFFFF;
+      position: relative;
+    }
+
+    /* Things 3 风格纯白大标题顶栏 */
+    .things-header-wrap {
+      padding: 36px 20px 8px 20px;
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .things-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+
+    .things-app-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--theme-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .things-logo-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--theme-primary);
+    }
+
+    .things-offline-badge {
+      font-size: 10px;
+      color: #64748B;
+      background: #F1F5F9;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .things-page-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -0.6px;
+      line-height: 1.15;
+    }
+
+    .things-page-subtitle {
+      font-size: 12px;
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    /* Things 3 风格极简周历条 (通透无压迫) */
+    .things-week-strip {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 18px 12px 18px;
+      border-bottom: 1px solid #F1F5F9;
+      background: #FFFFFF;
+    }
+
+    .week-day-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 8px;
+      transition: background-color var(--dur-quick) var(--ease-out);
+    }
+
+    .week-day-name {
+      font-size: 10px;
+      color: #94A3B8;
+      font-weight: 600;
+    }
+
+    .week-day-number {
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), box-shadow var(--dur-quick) var(--ease-out);
+    }
+
+    .week-day-pill.active .week-day-number {
+      background: var(--theme-primary);
+      color: #FFFFFF;
+      font-weight: 700;
+      box-shadow: 0 2px 6px var(--theme-shadow);
+    }
+
+    .week-workload-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: transparent;
+    }
+
+    .week-day-pill.has-work .week-workload-dot {
+      background: var(--theme-primary);
+    }
+
+    /* 任务列表滚动容器 */
+    .task-stream-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px 84px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Things 3 / Linear 雅致纯净任务卡片 */
+    .pure-task-card {
+      background: #FFFFFF;
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #F1F5F9;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+      cursor: pointer;
+      position: relative;
+      transition: transform var(--dur-press) var(--ease-out), border-color var(--dur-ui) var(--ease-out), background-color var(--dur-ui) var(--ease-out), box-shadow var(--dur-ui) var(--ease-out);
+      animation: taskItemEnter 240ms var(--ease-out) both;
+    }
+
+    .pure-task-card:nth-child(1) { animation-delay: 0ms; }
+    .pure-task-card:nth-child(2) { animation-delay: 35ms; }
+    .pure-task-card:nth-child(3) { animation-delay: 70ms; }
+    .pure-task-card:nth-child(4) { animation-delay: 105ms; }
+
+    .pure-task-card:active {
+      transform: scale(0.985);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .pure-task-card:hover {
+        border-color: #E2E8F0;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+      }
+    }
+
+    /* 圆形极简 Checkbox (Things 3 经典) */
+    .pure-checkbox {
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      border: 1.6px solid #CBD5E1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform var(--dur-press) var(--ease-out), background-color var(--dur-ui) var(--ease-out), border-color var(--dur-ui) var(--ease-out);
+    }
+
+    .pure-checkbox:active {
+      transform: scale(0.86);
+    }
+
+    .pure-task-card.is-completed .pure-checkbox {
+      background: var(--theme-primary);
+      border-color: var(--theme-primary);
+      animation: checkSpring 260ms var(--ease-spring);
+    }
+
+    .pure-task-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .pure-task-text {
+      font-size: 14.5px;
+      font-weight: 550;
+      color: #0F172A;
+      line-height: 1.35;
+      position: relative;
+      display: inline-block;
+      transition: color var(--dur-ui) var(--ease-out);
+    }
+
+    /* 墨水笔画 Clip-Path 划线 */
+    .pure-task-text::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1.4px;
+      background: #94A3B8;
+      transform: translateY(-50%);
+      clip-path: inset(0 100% 0 0);
+      transition: clip-path 220ms var(--ease-out);
+      pointer-events: none;
+    }
+
+    .pure-task-card.is-completed {
+      background: #FAFAFA;
+      border-color: #F1F5F9;
+    }
+
+    .pure-task-card.is-completed .pure-task-text {
+      color: #94A3B8;
+    }
+
+    .pure-task-card.is-completed .pure-task-text::after {
+      clip-path: inset(0 0 0 0);
+    }
+
+    .pure-task-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #64748B;
+    }
+
+    .meta-pill-sub {
+      background: #F1F5F9;
+      color: #475569;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* 艾利法序号：纯净等宽弱字，不刺眼 */
+    .pure-ivy-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94A3B8;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background: #F8FAFC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: monospace;
+    }
+
+    /* 方案 C：悬浮灵动输入胶囊 (Floating Pill Dock · Linear / Things 风格) */
+    .floating-pill-dock {
+      position: absolute;
+      bottom: 12px;
+      left: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 999px;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      box-shadow: 0 10px 28px -4px rgba(15, 23, 42, 0.1);
+      padding: 5px 6px 5px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 40;
+      transition: box-shadow var(--dur-quick) var(--ease-out), border-color var(--dur-quick) var(--ease-out);
+    }
+
+    .floating-pill-dock:focus-within {
+      box-shadow: 0 14px 34px -4px var(--theme-shadow);
+      border-color: var(--theme-primary);
+    }
+
+    .floating-quick-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 13px;
+      color: #0F172A;
+      font-weight: 500;
+    }
+
+    .floating-quick-input::placeholder {
+      color: #94A3B8;
+    }
+
+    .floating-add-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--theme-primary);
+      color: #FFFFFF;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px var(--theme-shadow);
+      transition: transform var(--dur-press) var(--ease-out), filter var(--dur-quick) var(--ease-out);
+    }
+
+    .floating-add-btn:active {
+      transform: scale(0.92);
+    }
+
+    .task-card-row {
+      background: #FFFFFF;
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid #EEF2F5;
+      cursor: pointer;
+      position: relative;
+      transition: transform var(--dur-press) var(--ease-out), border-color var(--dur-ui) var(--ease-out), background-color var(--dur-ui) var(--ease-out);
+      animation: taskItemEnter 260ms var(--ease-out) both;
+    }
+
+    /* Emil Kowalski 30-80ms Stagger 瀑布级联进场 */
+    .task-card-row:nth-child(1) { animation-delay: 0ms; }
+    .task-card-row:nth-child(2) { animation-delay: 40ms; }
+    .task-card-row:nth-child(3) { animation-delay: 80ms; }
+    .task-card-row:nth-child(4) { animation-delay: 120ms; }
+
+    @keyframes taskItemEnter {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .task-card-row:active {
+      transform: scale(0.985);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .task-card-row:hover {
+        border-color: #CBD5E0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+    }
+
+    /* 方案 A：就地划线保留 (Emil Kowalski 钢笔墨水 Clip-Path 模式) */
+    .task-card-row.is-completed {
+      background: #FAFCFB;
+      border-color: #E2E8F0;
+    }
+
+    .task-main-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+      line-height: 1.4;
+      position: relative;
+      display: inline-block;
+      transition: color var(--dur-ui) var(--ease-out);
+    }
+
+    /* 钢笔划线伪元素：从左向右墨水划过 */
+    .task-main-text::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1.5px;
+      background: #94A3B8;
+      transform: translateY(-50%);
+      clip-path: inset(0 100% 0 0); /* 初始右侧全部裁剪 */
+      transition: clip-path 220ms var(--ease-out);
+      pointer-events: none;
+    }
+
+    .task-card-row.is-completed .task-main-text {
+      color: var(--text-tertiary);
+    }
+
+    .task-card-row.is-completed .task-main-text::after {
+      clip-path: inset(0 0 0 0); /* 墨水丝滑展开划过整行文字 */
+    }
+
+    .task-checkbox-round {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1.8px solid #CBD5E0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform var(--dur-press) var(--ease-out), background-color var(--dur-ui) var(--ease-out), border-color var(--dur-ui) var(--ease-out);
+    }
+
+    .task-checkbox-round:active {
+      transform: scale(0.86);
+    }
+
+    .task-checkbox-round.checked {
+      background: var(--color-success);
+      border-color: var(--color-success);
+      animation: checkSpring 260ms var(--ease-spring);
+    }
+
+    @keyframes checkSpring {
+      0% { transform: scale(0.85); }
+      60% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    .ivy-badge-tag {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .ivy-p1 { border: 1.5px solid var(--ivy-red); color: var(--ivy-red); }
+    .ivy-p2 { border: 1.5px solid var(--ivy-cyan); color: var(--ivy-cyan); }
+    .ivy-p3 { border: 1.5px solid var(--ivy-blue); color: var(--ivy-blue); }
+    .ivy-p4 { border: 1.5px solid #2980B9; color: #2980B9; }
+    .ivy-p5 { border: 1.5px solid var(--ivy-orange); color: var(--ivy-orange); }
+
+    .task-body-content {
+      flex: 1;
+    }
+
+    .task-main-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+      line-height: 1.4;
+      transition: color 0.2s;
+    }
+
+    .task-sub-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .subtasks-checklist-box {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed #F1F3F5;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sub-item-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-regular);
+    }
+
+    .sub-item-check.sub-done {
+      color: var(--text-tertiary);
+      text-decoration: line-through;
+    }
+
+    .pomo-shortcut-circle {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--theme-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--theme-primary);
+      font-size: 13px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* 方案 C：双模新建任务 (底栏常驻输入条 + 浮动展开 FAB) */
+    .dual-input-dock-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #FFFFFF;
+      border-top: 1px solid var(--border-light);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
+      z-index: 40;
+    }
+
+    .quick-input-field {
+      flex: 1;
+      background: #F4F6F9;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      outline: none;
+      color: var(--text-main);
+    }
+
+    .quick-input-field:focus {
+      border-color: var(--theme-primary);
+      background: #FFFFFF;
+    }
+
+    .quick-add-enter-btn {
+      background: var(--theme-primary);
+      color: #FFFFFF;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform var(--dur-press) var(--ease-out), filter var(--dur-quick) var(--ease-out);
+    }
+
+    .quick-add-enter-btn:active {
+      transform: scale(0.95);
+    }
+
+    .expand-detail-sheet-fab {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--theme-light);
+      color: var(--theme-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid rgba(0, 135, 121, 0.2);
+      font-size: 18px;
+      font-weight: 800;
+      transition: transform var(--dur-press) var(--ease-out), background-color var(--dur-quick) var(--ease-out);
+    }
+
+    .expand-detail-sheet-fab:active {
+      transform: scale(0.92);
+    }
+
+    /* -------------------------------------------------------------
+       MODAL: 任务详情 BOTTOM SHEET (方案 C 完整属性设置 · iOS 级物理抽屉)
+       ------------------------------------------------------------- */
+    .screen-view-detail {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.42);
+      justify-content: flex-end;
+      z-index: 200;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--dur-ui) var(--ease-out);
+    }
+
+    .screen-view-detail.sheet-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .white-sheet-panel {
+      background: #FFFFFF;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      padding: 12px 20px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: var(--shadow-sheet);
+      max-height: 92%;
+      transform: translateY(100%);
+      transition: transform var(--dur-drawer) var(--ease-drawer);
+      will-change: transform;
+    }
+
+    .screen-view-detail.sheet-open .white-sheet-panel {
+      transform: translateY(0);
+    }
+
+    /* iOS 物理手柄药丸条 */
+    .sheet-drag-handle {
+      width: 38px;
+      height: 4.5px;
+      background: #CBD5E1;
+      border-radius: 999px;
+      margin: 2px auto 6px auto;
+      cursor: grab;
+      transition: background-color var(--dur-press) var(--ease-out);
+    }
+
+    .sheet-drag-handle:hover {
+      background: #94A3B8;
+    }
+
+    .sheet-top-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sheet-tag-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .tag-color-circle {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--theme-primary);
+    }
+
+    .sheet-save-action {
+      color: var(--theme-primary);
+      font-size: 14px;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .sheet-task-input {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+      border: none;
+      outline: none;
+      width: 100%;
+    }
+
+    .date-pills-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .date-pill-btn {
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: #F1F4F6;
+      color: var(--text-regular);
+      cursor: pointer;
+    }
+
+    .date-pill-btn.active {
+      background: var(--theme-primary);
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+
+    .workload-bar-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #F8FAF9;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .workload-segmented-ctrl {
+      display: flex;
+      background: #E8ECEF;
+      padding: 2px;
+      border-radius: 6px;
+    }
+
+    .workload-choice {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      color: var(--text-regular);
+      background: transparent;
+    }
+
+    .workload-choice.active-red {
+      background: var(--ivy-red);
+      color: #FFFFFF;
+      font-weight: 700;
+    }
+
+    /* -------------------------------------------------------------
+       TAB 2: 专注 (博朗 Dieter Rams 纯白极简时钟)
+       ------------------------------------------------------------- */
+    .screen-view-pomodoro {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      background: #FFFFFF;
+    }
+
+    .pomo-minimal-header {
+      padding: 34px 14px 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #F8FAFC;
+      gap: 6px;
+    }
+
+    .pomo-back-btn {
+      font-size: 12px;
+      color: #64748B;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background-color var(--dur-quick) var(--ease-out);
+    }
+    .pomo-back-btn:hover { background: #F1F5F9; }
+
+    .pomo-focus-target {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pomo-target-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--theme-primary);
+    }
+
+    .pomo-clock-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 20px;
+    }
+
+    .clock-outer-dial {
+      width: 276px;
+      height: 276px;
+      border-radius: 50%;
+      background: radial-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+      box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.9),
+        0 0 0 7px #F8FAFC,
+        0 0 0 8px #E2E8F0,
+        0 20px 40px -12px rgba(15, 23, 42, 0.1),
+        0 6px 14px -4px rgba(0, 135, 121, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .clock-svg-ticks {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .dial-center-digits {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 140px;
+      pointer-events: none;
+    }
+
+    .pomo-status-tag {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--theme-primary);
+      background: var(--theme-subtle);
+      border: 1px solid var(--theme-light);
+      padding: 2px 7px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+
+    .pomo-pulse-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--theme-primary);
+      animation: pomoPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pomoPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+
+    .pomo-time-number {
+      font-size: 40px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -1.5px;
+      font-variant-numeric: tabular-nums;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.05;
+    }
+
+    .pomo-session-hint {
+      font-size: 10px;
+      color: #94A3B8;
+      margin-top: 3px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .pomo-actions-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .pomo-primary-btn {
+      background: linear-gradient(180deg, #009688 0%, #008779 100%);
+      color: #FFFFFF;
+      border: 1px solid rgba(0, 135, 121, 0.4);
+      padding: 11px 26px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px var(--theme-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      transition: transform var(--dur-press) var(--ease-out);
+    }
+
+    .pomo-secondary-btn {
+      background: #FFFFFF;
+      color: #475569;
+      border: 1px solid #E2E8F0;
+      padding: 11px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+      transition: transform var(--dur-press) var(--ease-out), background-color var(--dur-quick) var(--ease-out);
+    }
+
+    .pomo-primary-btn:active, .pomo-secondary-btn:active {
+      transform: scale(0.95);
+    }
+
+    .pomo-ambient-dock {
+      margin-top: 20px;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 999px;
+      padding: 3px 5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .ambient-chip {
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748B;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), box-shadow var(--dur-quick) var(--ease-out), transform 120ms var(--ease-out);
+    }
+
+    .ambient-chip.active {
+      background: #FFFFFF;
+      color: var(--theme-primary);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    .sound-wave-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 10px;
+    }
+
+    .sound-wave-bars span {
+      width: 2px;
+      background: var(--theme-primary);
+      border-radius: 1px;
+      animation: soundWave 1.2s infinite ease-in-out alternate;
+    }
+    .sound-wave-bars span:nth-child(1) { height: 4px; animation-delay: 0.1s; }
+    .sound-wave-bars span:nth-child(2) { height: 9px; animation-delay: 0.3s; }
+    .sound-wave-bars span:nth-child(3) { height: 6px; animation-delay: 0.2s; }
+
+    @keyframes soundWave {
+      0% { height: 3px; }
+      100% { height: 10px; }
+    }
+
+    /* -------------------------------------------------------------
+       TAB 3: 复盘 (GTD 模块化数据报表)
+       ------------------------------------------------------------- */
+    .screen-view-stats {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      background: #F5F7FA;
+      overflow-y: auto;
+    }
+
+    .stats-card-flow {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dual-metric-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .metric-banner {
+      border-radius: 10px;
+      padding: 14px;
+      color: #FFFFFF;
+    }
+
+    .metric-banner.teal { background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-dark) 100%); }
+    .metric-banner.red { background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%); }
+
+    /* -------------------------------------------------------------
+       TAB 4: 我的 (本地模式 · 主题换肤 · 本地JSON备份)
+       ------------------------------------------------------------- */
+    .screen-view-profile {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      background: #F8FAF9;
+      overflow-y: auto;
+    }
+
+    .profile-top-card {
+      background: #FFFFFF;
+      padding: 34px 20px 18px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .profile-avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--theme-primary), #27AE60);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .medals-scroll-row {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #FFFFFF;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border-light);
+      overflow-x: auto;
+    }
+
+    .medal-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .medal-icon-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--theme-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .theme-select-card {
+      background: #FFFFFF;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: transform var(--dur-press) var(--ease-out), border-color var(--dur-ui) var(--ease-out);
+    }
+
+    .theme-select-card:active {
+      transform: scale(0.97);
+    }
+
+    .theme-select-card.active {
+      border: 2px solid var(--theme-primary);
+      background: #FAFCFB;
+    }
+
+    /* 4-Tab Bottom Nav Bar */
+    .phone-bottom-nav {
+      height: 58px;
+      background: #FFFFFF;
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding-bottom: 2px;
+      position: relative;
+      z-index: 50;
+    }
+
+    .nav-tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      color: #95A5A6;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+      transition: color var(--dur-quick) var(--ease-out), transform var(--dur-press) var(--ease-out);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .nav-tab-item:active {
+      transform: scale(0.92);
+    }
+
+    .nav-tab-item.active-tab {
+      color: var(--theme-primary);
+      font-weight: 800;
+    }
+
+    /* Emil Kowalski 基础按压反馈体系 */
+    button:active, .date-pill-btn:active, .workload-choice:active, .abandon-red-btn:active, .pomo-shortcut-circle:active {
+      transform: scale(0.96);
+    }
+
+    .date-pill-btn, .workload-choice, .abandon-red-btn, .pomo-shortcut-circle {
+      transition: transform var(--dur-press) var(--ease-out), background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out);
+    }
+
+    /* 尊重用户 Reduced Motion 偏好 */
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .task-main-text::after {
+        transition: none !important;
+      }
+    }
+
+    /* =========================================================
+       2. WEB DESKTOP WORKSPACE (4 CORE MODULES, LOCAL)
+       ========================================================= */
+    .web-workspace-card {
+      display: none;
+      width: 100%;
+      max-width: 1360px;
+      height: 820px;
+      background: #FFFFFF;
+      border-radius: 16px;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .web-col-nav {
+      width: 260px;
+      background: #F8FAF9;
+      border-right: 1px solid var(--border-light);
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .web-col-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #FFFFFF;
+      border-right: 1px solid var(--border-light);
+    }
+
+    .web-col-detail {
+      width: 360px;
+      background: #FFFFFF;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  
+    /* -------------------------------------------------------------
+       方向 B 与 双风格对比专属 CSS (Teenage Engineering × Braun)
+       ------------------------------------------------------------- */
+    .pomo-theme-switch-bar {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 6px 16px 8px 16px;
+      background: inherit;
+    }
+
+    .pomo-toggle-pill {
+      border: 1px solid var(--border-light);
+      background: #FFFFFF;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), border-color var(--dur-quick) var(--ease-out), transform 120ms var(--ease-out);
+    }
+
+    .pomo-toggle-pill.active {
+      background: #0F172A;
+      color: #FFFFFF;
+      border-color: #0F172A;
+    }
+
+    /* DARK MODE STYLES */
+    .screen-view-pomodoro.pomo-dark-mode {
+      background: #0B0F14 !important;
+      color: #F8FAFC !important;
+    }
+
+    .pomo-dark-mode .pomo-minimal-header {
+      border-bottom: 1px solid #1A222D !important;
+    }
+
+    .pomo-dark-mode .pomo-back-btn {
+      color: #94A3B8 !important;
+    }
+    .pomo-dark-mode .pomo-back-btn:hover {
+      background: #1A222D !important;
+      color: #F1F5F9 !important;
+    }
+
+    .pomo-dark-mode .pomo-focus-target {
+      color: #F1F5F9 !important;
+    }
+
+    .pomo-dark-mode .pomo-target-dot {
+      background: #00E6CC !important;
+      box-shadow: 0 0 8px #00E6CC !important;
+    }
+
+    .pomo-dark-mode .pomo-toggle-pill {
+      background: #161B22;
+      border-color: #30363D;
+      color: #94A3B8;
+    }
+    .pomo-dark-mode .pomo-toggle-pill.active {
+      background: #00E6CC;
+      color: #0B0F14;
+      border-color: #00E6CC;
+    }
+
+    .pomo-dark-mode .clock-outer-dial {
+      background: radial-gradient(135deg, #161B22 0%, #0D1117 100%) !important;
+      box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 0 0 7px #161B22,
+        0 0 0 8px #21262D,
+        0 24px 60px -12px rgba(0, 0, 0, 0.85),
+        0 0 35px rgba(0, 230, 204, 0.15) !important;
+    }
+
+    .pomo-dark-mode .clock-svg-ticks #dialFaceGradient stop:nth-child(1) { stop-color: #161C24 !important; }
+    .pomo-dark-mode .clock-svg-ticks #dialFaceGradient stop:nth-child(2) { stop-color: #0E131A !important; }
+    .pomo-dark-mode .clock-svg-ticks #dialFaceGradient stop:nth-child(3) { stop-color: #0A0E13 !important; }
+
+    .pomo-dark-mode .clock-svg-ticks #arcGreenGrad stop:nth-child(1) { stop-color: #00F5D4 !important; }
+    .pomo-dark-mode .clock-svg-ticks #arcGreenGrad stop:nth-child(2) { stop-color: #00BFA5 !important; }
+
+    .pomo-dark-mode .dial-ticks line[stroke="#334155"] {
+      stroke: #00E6CC !important;
+      filter: drop-shadow(0 0 3px rgba(0, 230, 204, 0.7));
+    }
+    .pomo-dark-mode .dial-ticks line[stroke="#CBD5E1"] {
+      stroke: #334155 !important;
+    }
+
+    .pomo-dark-mode .dial-labels text {
+      fill: #64748B !important;
+    }
+
+    .pomo-dark-mode .clock-svg-ticks circle[stroke="#E2E8F0"] {
+      stroke: #1E293B !important;
+    }
+    .pomo-dark-mode .clock-svg-ticks circle[stroke="#FFFFFF"] {
+      stroke: rgba(255, 255, 255, 0.04) !important;
+    }
+
+    .pomo-dark-mode .pomo-status-tag {
+      background: rgba(0, 230, 204, 0.12) !important;
+      border-color: rgba(0, 230, 204, 0.3) !important;
+      color: #00E6CC !important;
+    }
+
+    .pomo-dark-mode .pomo-pulse-dot {
+      background: #00E6CC !important;
+      box-shadow: 0 0 8px #00E6CC !important;
+    }
+
+    .pomo-dark-mode .pomo-time-number {
+      color: #F8FAFC !important;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .pomo-dark-mode .pomo-session-hint {
+      color: #64748B !important;
+    }
+
+    .pomo-dark-mode .pomo-primary-btn {
+      background: linear-gradient(180deg, #00F5D4 0%, #00BFA5 100%) !important;
+      color: #0B0F14 !important;
+      border: none !important;
+      box-shadow: 0 4px 20px rgba(0, 230, 204, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+    }
+
+    .pomo-dark-mode .pomo-secondary-btn {
+      background: #161B22 !important;
+      color: #94A3B8 !important;
+      border: 1px solid #30363D !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    .pomo-dark-mode .pomo-ambient-dock {
+      background: #161B22 !important;
+      border-color: #30363D !important;
+    }
+
+    .pomo-dark-mode .ambient-chip {
+      color: #64748B !important;
+    }
+    .pomo-dark-mode .ambient-chip.active {
+      background: #21262D !important;
+      color: #00E6CC !important;
+      box-shadow: 0 0 8px rgba(0, 230, 204, 0.2) !important;
+    }
+
+    .pomo-dark-mode .sound-wave-bars span {
+      background: #00E6CC !important;
+      box-shadow: 0 0 4px #00E6CC !important;
+    }
+
+    /* COMPARE STAGE (SIDE BY SIDE) */
+    .compare-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .compare-dual-phones {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+
+    .compare-card-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .compare-title-badge {
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+  
+    /* =========================================================
+       全局外观模式系统 (浅色 / 深色 / 跟随系统)
+       ========================================================= */
+    .appearance-segmented-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .appearance-option {
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-light);
+      border-radius: 10px;
+      padding: 10px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color var(--dur-quick) var(--ease-out), background-color var(--dur-quick) var(--ease-out), transform 120ms var(--ease-out);
+    }
+    .appearance-option:active {
+      transform: scale(0.96);
+    }
+    .appearance-option.active {
+      border-color: var(--theme-primary);
+      background: var(--theme-subtle);
+    }
+    .appearance-icon {
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+    .appearance-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .appearance-desc {
+      font-size: 9.5px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    /* FULL APP DARK MODE (APPLIED TO .phone-viewport OR GLOBAL) */
+    .phone-viewport.app-dark-mode {
+      background: #0B0F14 !important;
+      color: #F8FAFC !important;
+    }
+
+    .phone-viewport.app-dark-mode .phone-status-header {
+      background: #0E1218;
+      color: #94A3B8;
+      border-bottom: 1px solid #1E2530;
+    }
+
+    /* 1. Today Screen Dark */
+    .phone-viewport.app-dark-mode .screen-view-today {
+      background: #0B0F14;
+    }
+    .phone-viewport.app-dark-mode .things-header-wrap {
+      background: #0B0F14;
+    }
+    .phone-viewport.app-dark-mode .things-page-title {
+      color: #F8FAFC;
+    }
+    .phone-viewport.app-dark-mode .things-page-subtitle {
+      color: #8B949E;
+    }
+    .phone-viewport.app-dark-mode .things-offline-badge {
+      background: #1A222D;
+      color: #00E6CC;
+      border-color: #212E3D;
+    }
+    .phone-viewport.app-dark-mode .things-week-strip {
+      background: #0B0F14;
+      border-color: #1A222D;
+    }
+    .phone-viewport.app-dark-mode .week-day-name {
+      color: #64748B;
+    }
+    .phone-viewport.app-dark-mode .week-day-number {
+      color: #94A3B8;
+    }
+    .phone-viewport.app-dark-mode .week-day-pill.active .week-day-number {
+      color: #0B0F14 !important;
+    }
+
+    .phone-viewport.app-dark-mode .pure-task-card {
+      background: #131821;
+      border-color: #212936;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    .phone-viewport.app-dark-mode .pure-task-card:hover {
+      border-color: #334155;
+    }
+    .phone-viewport.app-dark-mode .pure-task-text {
+      color: #F8FAFC;
+    }
+    .phone-viewport.app-dark-mode .pure-task-meta {
+      color: #8B949E;
+    }
+    .phone-viewport.app-dark-mode .meta-pill-sub {
+      background: #1A2330;
+      color: #A5B4FC;
+    }
+    .phone-viewport.app-dark-mode .pure-checkbox {
+      border-color: #475569;
+      background: #0E131A;
+    }
+    .phone-viewport.app-dark-mode .pure-checkbox.checked {
+      background: var(--theme-primary);
+      border-color: var(--theme-primary);
+    }
+    .phone-viewport.app-dark-mode .pure-task-card.is-completed {
+      background: #0E1218;
+      border-color: #1A222D;
+      opacity: 0.65;
+    }
+    .phone-viewport.app-dark-mode .pure-ivy-num {
+      color: #64748B;
+    }
+
+    .phone-viewport.app-dark-mode .floating-pill-dock {
+      background: rgba(19, 24, 33, 0.88);
+      border-color: #303A4A;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+    }
+    .phone-viewport.app-dark-mode .floating-quick-input {
+      color: #F8FAFC;
+    }
+    .phone-viewport.app-dark-mode .floating-quick-input::placeholder {
+      color: #64748B;
+    }
+
+    /* 2. Detail Sheet Dark */
+    .phone-viewport.app-dark-mode .white-sheet-panel {
+      background: #131821;
+      border-top: 1px solid #303A4A;
+      color: #F8FAFC;
+    }
+    .phone-viewport.app-dark-mode .sheet-task-input {
+      color: #F8FAFC;
+      border-bottom-color: #212936;
+    }
+    .phone-viewport.app-dark-mode .date-pill-btn {
+      background: #1A222D;
+      color: #94A3B8;
+    }
+    .phone-viewport.app-dark-mode .date-pill-btn.active {
+      background: var(--theme-primary);
+      color: #FFFFFF;
+    }
+    .phone-viewport.app-dark-mode .workload-bar-box {
+      background: #1A222D;
+    }
+    .phone-viewport.app-dark-mode .workload-segmented-ctrl {
+      background: #0E131A;
+    }
+    .phone-viewport.app-dark-mode .workload-choice {
+      color: #94A3B8;
+    }
+
+    /* 3. Stats Dark */
+    .phone-viewport.app-dark-mode .screen-view-stats {
+      background: #0B0F14;
+    }
+    .phone-viewport.app-dark-mode .screen-view-stats > div {
+      background: #131821 !important;
+      border-color: #212936 !important;
+      color: #F8FAFC !important;
+    }
+    .phone-viewport.app-dark-mode .stats-card-flow > div {
+      background: #131821 !important;
+      border-color: #212936 !important;
+    }
+
+    /* 4. Profile Dark */
+    .phone-viewport.app-dark-mode .screen-view-profile {
+      background: #0B0F14;
+    }
+    .phone-viewport.app-dark-mode .profile-top-card {
+      background: #131821;
+      border-bottom-color: #212936;
+    }
+    .phone-viewport.app-dark-mode .appearance-option {
+      background: #131821;
+      border-color: #212936;
+    }
+    .phone-viewport.app-dark-mode .appearance-option.active {
+      border-color: #00E6CC;
+      background: rgba(0, 230, 204, 0.12);
+    }
+    .phone-viewport.app-dark-mode .appearance-label {
+      color: #F8FAFC;
+    }
+    .phone-viewport.app-dark-mode .appearance-desc {
+      color: #8B949E;
+    }
+    .phone-viewport.app-dark-mode .theme-select-card {
+      background: #131821;
+      border-color: #212936;
+      color: #F8FAFC;
+    }
+    .phone-viewport.app-dark-mode .theme-select-card.active {
+      border-color: var(--theme-primary);
+      background: #162228;
+    }
+    .phone-viewport.app-dark-mode .medals-scroll-row .medal-item {
+      background: #131821;
+      border-color: #212936;
+      color: #94A3B8;
+    }
+    .phone-viewport.app-dark-mode .medal-icon-circle {
+      background: #1A222D;
+    }
+    .phone-viewport.app-dark-mode #pageProfile > div > div:nth-child(4) > div:nth-child(2) {
+      background: #131821 !important;
+      border-color: #212936 !important;
+      color: #F8FAFC !important;
+    }
+
+    /* Bottom Nav Dark */
+    .phone-viewport.app-dark-mode .phone-bottom-nav {
+      background: #0E1218;
+      border-top-color: #1A222D;
+    }
+    .phone-viewport.app-dark-mode .nav-tab-item {
+      color: #64748B;
+    }
+    .phone-viewport.app-dark-mode .nav-tab-item.active-tab {
+      color: #00E6CC;
+    }
+
+  
+    /* =========================================================
+       参考设计重构：我的 (Profile) 页面规范
+       ========================================================= */
+    .screen-view-profile {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      background: #F8FAF9;
+      overflow-y: auto;
+      padding-bottom: 70px;
+    }
+
+    .profile-hero-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 34px 16px 14px 16px;
+    }
+
+    .profile-avatar-circle {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      border: 3px solid #FFFFFF;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .profile-username-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .profile-username-text {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -0.3px;
+    }
+
+    .profile-gender-badge {
+      font-size: 15px;
+      color: #0284C7;
+      font-weight: 700;
+    }
+
+    .profile-content-body {
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* 徽章卡片 (参考图 1:1) */
+    .profile-badges-card {
+      background: #FFFFFF;
+      border-radius: 14px;
+      border: 1px solid #EEF2F6;
+      padding: 14px 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .badges-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .badges-header-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    .badges-collapse-arrow {
+      font-size: 12px;
+      color: #94A3B8;
+      cursor: pointer;
+    }
+
+    .badges-grid-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge-col-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .badge-icon-frame {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--dur-press) var(--ease-out);
+    }
+
+    .badge-icon-frame.active-badge {
+      background: linear-gradient(135deg, #00CBA9 0%, #008779 100%);
+      box-shadow: 0 4px 14px rgba(0, 135, 121, 0.3);
+    }
+
+    .badge-icon-frame.locked-badge {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      opacity: 0.85;
+    }
+
+    .badge-name-label {
+      font-size: 11px;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    /* iOS 风格分组列表卡片 (参考图 1:1) */
+    .profile-list-group {
+      background: #FFFFFF;
+      border-radius: 14px;
+      border: 1px solid #EEF2F6;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      overflow: hidden;
+    }
+
+    .profile-list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #F1F5F9;
+      transition: background-color var(--dur-quick) var(--ease-out), transform var(--dur-press) var(--ease-out);
+    }
+    .profile-list-row:last-child {
+      border-bottom: none;
+    }
+    .profile-list-row:active {
+      background: #F8FAF9;
+      transform: scale(0.99);
+    }
+
+    .row-left-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .row-item-icon {
+      font-size: 17px;
+      width: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #334155;
+    }
+
+    .row-item-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #0F172A;
+    }
+
+    .row-right-content {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .row-item-meta {
+      font-size: 12px;
+      color: #94A3B8;
+    }
+
+    .row-item-chevron {
+      font-size: 14px;
+      color: #CBD5E1;
+      font-weight: 600;
+    }
+
+    .profile-section-heading {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #94A3B8;
+      padding: 6px 4px 0 4px;
+    }
+
+    /* DARK MODE STYLES FOR REDESIGNED PROFILE */
+    .phone-viewport.app-dark-mode .screen-view-profile {
+      background: #0B0F14 !important;
+    }
+    .phone-viewport.app-dark-mode .profile-avatar-circle {
+      border-color: #212936;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+    .phone-viewport.app-dark-mode .profile-username-text {
+      color: #F8FAFC !important;
+    }
+    .phone-viewport.app-dark-mode .profile-badges-card,
+    .phone-viewport.app-dark-mode .profile-list-group {
+      background: #131821 !important;
+      border-color: #212936 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+    }
+    .phone-viewport.app-dark-mode .badges-header-title,
+    .phone-viewport.app-dark-mode .row-item-title {
+      color: #F8FAFC !important;
+    }
+    .phone-viewport.app-dark-mode .profile-list-row {
+      border-bottom-color: #1A222D !important;
+    }
+    .phone-viewport.app-dark-mode .profile-list-row:active {
+      background: #161E28 !important;
+    }
+    .phone-viewport.app-dark-mode .badge-name-label {
+      color: #94A3B8 !important;
+    }
+    .phone-viewport.app-dark-mode .badge-icon-frame.locked-badge {
+      background: #1A222D !important;
+      border-color: #212936 !important;
+    }
+    .phone-viewport.app-dark-mode .row-item-meta {
+      color: #64748B !important;
+    }
+    .phone-viewport.app-dark-mode .row-item-chevron {
+      color: #475569 !important;
+    }
+
+  
+    /* =========================================================
+       清单 -> 专注 交互流增强规范 (Emil Kowalski Design Engineering)
+       ========================================================= */
+    .pure-task-right-cluster {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 方案 A: 任务行快捷直达 🍅 按钮 */
+    .pure-pomo-quick-btn {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px 8px;
+      border-radius: 16px;
+      background: #E8F5F4;
+      color: var(--theme-primary);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(0, 135, 121, 0.18);
+      transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), border-color var(--dur-quick) var(--ease-out), transform 120ms var(--ease-out), box-shadow var(--dur-quick) var(--ease-out);
+    }
+    .pure-pomo-quick-btn:hover {
+      background: var(--theme-primary);
+      color: #FFFFFF;
+      transform: scale(1.06);
+      box-shadow: 0 2px 8px rgba(0, 135, 121, 0.28);
+    }
+    .pure-pomo-quick-btn:active {
+      transform: scale(0.94);
+    }
+    .phone-viewport.app-dark-mode .pure-pomo-quick-btn {
+      background: #142825;
+      border-color: #1F4D46;
+      color: #00E6CC;
+    }
+    .phone-viewport.app-dark-mode .pure-pomo-quick-btn:hover {
+      background: #00A896;
+      color: #FFFFFF;
+    }
+
+    /* 方案 B: 详情抽屉内的沉浸专注主按钮 */
+    .sheet-start-pomo-btn {
+      width: 100%;
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-dark) 100%);
+      color: #FFFFFF;
+      font-size: 13.5px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px var(--theme-shadow);
+      transition: transform var(--dur-press) var(--ease-out), box-shadow var(--dur-quick) var(--ease-out);
+    }
+    .sheet-start-pomo-btn:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 6px var(--theme-shadow);
+    }
+
+    /* 专注钟顶部的当前待办焦点卡 */
+    .pomo-focus-target-pill {
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+      padding: 5px 12px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      cursor: pointer;
+      max-width: 200px;
+      transition: background-color var(--dur-quick) var(--ease-out);
+    }
+    .pomo-focus-target-pill:hover {
+      border-color: var(--theme-primary);
+    }
+    .pomo-target-text-ellipsis {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .phone-viewport.app-dark-mode .pomo-focus-target-pill {
+      background: #131821;
+      border-color: #212936;
+      color: #F8FAFC;
+    }
+
+    /* 专注钟：任务下拉点选浮层 (解决盲切痛点) */
+    .pomo-task-dropdown-menu {
+      position: absolute;
+      top: 42px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14);
+      width: 260px;
+      z-index: 120;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      animation: dropdownPop 180ms var(--ease-out);
+    }
+    @keyframes dropdownPop {
+      from { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.96); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    }
+    .pomo-dropdown-header {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      padding: 4px 8px;
+    }
+    .pomo-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background-color 120ms var(--ease-out), color 120ms var(--ease-out);
+    }
+    .pomo-dropdown-item:hover,
+    .pomo-dropdown-item:active {
+      background: var(--theme-subtle);
+      color: var(--theme-primary);
+    }
+    .pomo-dropdown-item.active {
+      background: var(--theme-light);
+      color: var(--theme-primary);
+    }
+    .pure-ivy-num.sm {
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+      line-height: 18px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+    }
+    .phone-viewport.app-dark-mode .pomo-task-dropdown-menu {
+      background: #18202C;
+      border-color: #2D3A4F;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+    }
+    .phone-viewport.app-dark-mode .pomo-dropdown-item {
+      color: #E2E8F0;
+    }
+
+    /* 专注钟：表盘中心时间数字点击快速换时长气泡 */
+    .pomo-quick-duration-bubble {
+      position: absolute;
+      bottom: -34px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1E293B;
+      color: #FFFFFF;
+      border-radius: 24px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      z-index: 80;
+      animation: dropdownPop 160ms var(--ease-out);
+    }
+    .pomo-quick-duration-bubble span {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 100ms var(--ease-out), color 100ms var(--ease-out);
+    }
+    .pomo-quick-duration-bubble span:hover,
+    .pomo-quick-duration-bubble span.active {
+      background: var(--theme-primary);
+      color: #FFFFFF;
+    }
+
+    /* 触觉反馈统一规范：按钮与可点击行增加瞬发微缩放 */
+    .pure-task-card:active {
+      transform: scale(0.985);
+    }
+    .profile-list-row:active {
+      transform: scale(0.985);
+    }
+    .pomo-primary-btn:active,
+    .pomo-secondary-btn:active {
+      transform: scale(0.96);
+    }
+    .nav-tab-item:active {
+      transform: scale(0.92);
+    }
+
+    /* 暗黑模式下抽屉内部卡片及文字自适应，杜绝刺眼亮色 */
+    .phone-viewport.app-dark-mode .white-sheet-panel div[style*="background: #F8FAF9"],
+    .phone-viewport.app-dark-mode .white-sheet-panel div[style*="background:#F8FAF9"],
+    .phone-viewport.app-dark-mode .white-sheet-panel div[style*="background: #FAFCFD"],
+    .phone-viewport.app-dark-mode .white-sheet-panel div[style*="background:#FAFCFD"],
+    .phone-viewport.app-dark-mode .white-sheet-panel div[style*="background: #FFFFFF"],
+    .phone-viewport.app-dark-mode .white-sheet-panel div[style*="background:#FFFFFF"],
+    .phone-viewport.app-dark-mode .lang-choice-row {
+      background: #1A222D !important;
+      border-color: #283548 !important;
+      color: #E2E8F0 !important;
+    }
+    .phone-viewport.app-dark-mode .lang-choice-row.selected-lang {
+      background: rgba(0, 135, 121, 0.22) !important;
+      border-color: var(--theme-primary) !important;
+    }
+    .phone-viewport.app-dark-mode .white-sheet-panel div[style*="color: var(--text-main)"] {
+      color: #F8FAFC !important;
+    }
+    .phone-viewport.app-dark-mode .white-sheet-panel div[style*="color: var(--text-secondary)"] {
+      color: #94A3B8 !important;
+    }
+
+    /* 轻量 Toast 提示 */
+    .pomo-toast-toast {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(15, 23, 42, 0.9);
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 24px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
+      z-index: 9999;
+      white-space: nowrap;
+    }
+    .pomo-toast-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* 顶部横幅：交互对比方案控制器 */
+    .interaction-compare-banner {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-light);
+      padding: 8px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 12.5px;
+    }
+    .compare-options-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .compare-mode-tag {
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #F1F5F9;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), border-color var(--dur-quick) var(--ease-out), transform 120ms var(--ease-out);
+    }
+    .compare-mode-tag.active {
+      background: #E0F2F1;
+      color: var(--theme-primary);
+      border-color: rgba(0, 135, 121, 0.3);
+      font-weight: 700;
+    }
+
+    /* -------------------------------------------------------------
+       离线白噪音环境音控制条
+       ------------------------------------------------------------- */
+    .pomo-noise-control-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 12px auto 6px auto;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 20px;
+      width: fit-content;
+      max-width: 90%;
+    }
+    .phone-viewport.app-dark-mode .pomo-noise-control-bar,
+    .pomo-dark-mode .pomo-noise-control-bar {
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .pomo-noise-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), border-color var(--dur-quick) var(--ease-out), transform var(--dur-press) var(--ease-out);
+    }
+    .pomo-noise-pill:hover {
+      color: var(--text-main);
+    }
+    .pomo-noise-pill:active {
+      transform: scale(0.96);
+    }
+    .pomo-noise-pill.active {
+      background: var(--theme-primary);
+      color: #FFFFFF;
+      box-shadow: 0 2px 8px var(--theme-shadow);
+    }
+
+    /* -------------------------------------------------------------
+       全屏沉浸专注模式 (Fullscreen Immersive Focus)
+       ------------------------------------------------------------- */
+    .phone-viewport.fullscreen-immersive-mode {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      z-index: 99999 !important;
+      background: #0E131A !important;
+      margin: 0 !important;
+    }
+    .fullscreen-immersive-mode .phone-status-bar,
+    .fullscreen-immersive-mode .phone-top-tabs,
+    .fullscreen-immersive-mode .phone-bottom-nav {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transform: translateY(-20px) !important;
+      transition: opacity 280ms var(--ease-out), transform 280ms var(--ease-out);
+    }
+    .fullscreen-immersive-mode .phone-bottom-nav {
+      transform: translateY(40px) !important;
+    }
+    .fullscreen-immersive-mode .screen-view-pomo {
+      display: flex !important;
+      height: 100vh !important;
+      justify-content: center !important;
+      align-items: center !important;
+      background: radial-gradient(circle at center, #1E293B 0%, #0B0F15 100%) !important;
+    }
+    .fullscreen-immersive-mode .pomo-dial-wrap {
+      transform: scale(1.18);
+      transition: transform 400ms var(--ease-drawer);
+      box-shadow: 0 0 60px rgba(0, 135, 121, 0.25);
+    }
+    .immersive-exit-btn {
+      display: none;
+      position: absolute;
+      top: 24px;
+      right: 28px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 100000;
+      transition: background-color 160ms ease, transform 140ms ease;
+    }
+    .immersive-exit-btn:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+    .immersive-exit-btn:active {
+      transform: scale(0.95);
+    }
+    .fullscreen-immersive-mode .immersive-exit-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 快捷键提示模态框 */
+    .keyboard-shortcuts-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      z-index: 100001;
+      align-items: center;
+      justify-content: center;
+    }
+    .keyboard-shortcuts-overlay.show {
+      display: flex;
+    }
+    .shortcuts-card {
+      background: #FFFFFF;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 380px;
+      padding: 22px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .phone-viewport.app-dark-mode .shortcuts-card {
+      background: #151C26;
+      border-color: #212C3D;
+      color: #F8FAFC;
+    }
+    .shortcut-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12.5px;
+    }
+    .shortcut-key-badge {
+      background: #F1F5F9;
+      border: 1px solid #CBD5E1;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    .phone-viewport.app-dark-mode .shortcut-key-badge {
+      background: #202B3B;
+      border-color: #334155;
+      color: #E2E8F0;
+    }
+
