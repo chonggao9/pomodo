@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/update_service.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/pomodoro_provider.dart';
@@ -407,6 +408,124 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  // 5. 检查更新处理 (对接 GitHub Releases)
+  Future<void> _handleCheckUpdate() async {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ),
+            SizedBox(width: 10),
+            Text('正在连接 GitHub 检查最新发布版...'),
+          ],
+        ),
+        duration: Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    final info = await UpdateService.checkUpdate();
+    if (!mounted) return;
+
+    if (info == null) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('更新检测', style: TextStyle(fontWeight: FontWeight.w700)),
+          content: const Text('暂未获取到 GitHub 更新信息，您可直接前往 Releases 页面查看与下载最新安装包。'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('关闭')),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                UpdateService.openUrl('https://github.com/${UpdateService.githubRepo}/releases');
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.marsGreen, foregroundColor: Colors.white),
+              child: const Text('前往 Releases 网页'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(
+              info.hasNewVersion ? Icons.system_update_rounded : Icons.check_circle_outline_rounded,
+              color: AppTheme.marsGreen,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              info.hasNewVersion ? '发现新版本 ${info.tagName}' : '已是最新版本',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '当前版本: v${UpdateService.currentVersion} | GitHub 最新: ${info.tagName}',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.borderLight),
+              ),
+              child: Text(
+                info.changelog,
+                maxLines: 8,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary, height: 1.4),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(info.hasNewVersion ? '暂不更新' : '好的'),
+          ),
+          if (info.apkDownloadUrl != null)
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                UpdateService.openUrl(info.apkDownloadUrl!);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.marsGreen, foregroundColor: Colors.white),
+              child: const Text('下载最新 APK'),
+            )
+          else
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                UpdateService.openUrl(info.releaseUrl);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.marsGreen, foregroundColor: Colors.white),
+              child: const Text('查看 GitHub 发布'),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -512,6 +631,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           const SnackBar(content: Text('原生默认简体中文'), behavior: SnackBarBehavior.floating),
                         );
                       },
+                    ),
+                    const Divider(height: 1, indent: 46, endIndent: 14, color: AppTheme.borderLight),
+                    _buildListRow(
+                      icon: Icons.system_update_alt_rounded,
+                      title: '检查版本更新',
+                      meta: 'v1.0.0 (GitHub) ›',
+                      onTap: _handleCheckUpdate,
                     ),
                   ]),
 
