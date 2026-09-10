@@ -25,16 +25,22 @@ class WhiteNoiseService {
 
     try {
       final docDir = await getApplicationDocumentsDirectory();
-      final soundDir = Directory('${docDir.path}/white_noise');
+      final soundDir = Directory('${docDir.path}/white_noise_brown_v1');
       if (!await soundDir.exists()) {
         await soundDir.create(recursive: true);
       }
 
+      final brownNoiseFile = File('${soundDir.path}/brown_noise.wav');
       final rainFile = File('${soundDir.path}/rain.wav');
       final typewriterFile = File('${soundDir.path}/typewriter.wav');
       final campfireFile = File('${soundDir.path}/campfire.wav');
 
       // 仅在文件不存在或为空时生成，避免每次启动重复计算
+      if (!await brownNoiseFile.exists() || await brownNoiseFile.length() < 1000) {
+        final brownBytes = _synthesizeBrownNoiseWav(sampleRate: 22050, durationSec: 8.0);
+        await brownNoiseFile.writeAsBytes(brownBytes, flush: true);
+      }
+
       if (!await rainFile.exists() || await rainFile.length() < 1000) {
         final rainBytes = _synthesizeRainWav(sampleRate: 22050, durationSec: 7.0);
         await rainFile.writeAsBytes(rainBytes, flush: true);
@@ -50,6 +56,7 @@ class WhiteNoiseService {
         await campfireFile.writeAsBytes(campfireBytes, flush: true);
       }
 
+      _soundFiles['布朗噪音'] = brownNoiseFile.path;
       _soundFiles['雨落窗台'] = rainFile.path;
       _soundFiles['机械打字'] = typewriterFile.path;
       _soundFiles['夜色篝火'] = campfireFile.path;
@@ -131,32 +138,52 @@ class WhiteNoiseService {
   // 数学过程式音频合成器 (Procedural Audio Synthesizers)
   // =========================================================================
 
-  /// 1. 雨落窗台 (Rain on Window): 温暖粉红噪音 + 随机轻柔雨滴拍击
-  Uint8List _synthesizeRainWav({required int sampleRate, required double durationSec}) {
+  /// 0. 纯正深邃布朗噪音 (Pure Brownian / Brown Noise):
+  /// 基于严格的一阶泄漏积分（Leaky Integrator）随机漫步，能量沿频率以 1/f²（-6dB/Octave）深度衰减
+  /// 辅以 0.08Hz 极低频自然呼吸起伏与双极点柔化滤波，呈现如深海潜流、温暖客舱巡航般的沉浸心流声场
+  Uint8List _synthesizeBrownNoiseWav({required int sampleRate, required double durationSec}) {
     final totalSamples = (sampleRate * durationSec).toInt();
     final samples = Float32List(totalSamples);
-    final random = Random(42);
+    final random = Random(777);
 
-    // Paul Kellet's 粉红噪音滤波器状态
-    double b0 = 0.0, b1 = 0.0, b2 = 0.0, b3 = 0.0, b4 = 0.0, b5 = 0.0, b6 = 0.0;
+    double brown = 0.0;
     double lpFilter = 0.0;
 
     for (int i = 0; i < totalSamples; i++) {
       final white = (random.nextDouble() * 2.0 - 1.0);
 
-      // 粉红噪音滤波器
-      b0 = 0.99886 * b0 + white * 0.0555179;
-      b1 = 0.99332 * b1 + white * 0.0750759;
-      b2 = 0.96900 * b2 + white * 0.1538520;
-      b3 = 0.86650 * b3 + white * 0.3104856;
-      b4 = 0.55000 * b4 + white * 0.5329522;
-      b5 = -0.7616 * b5 - white * 0.0168980;
-      final pink = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.09;
-      b6 = white * 0.115926;
+      // 标准布朗运动随机漫步 (积分系数 0.988 消除直流漂移，输入驱动 0.082)
+      brown = (brown * 0.988) + (white * 0.082);
 
-      // 柔和低通滤波 (模拟隔着玻璃窗的沉闷雨声，消除刺耳毛刺)
-      lpFilter = lpFilter + 0.18 * (pink - lpFilter);
-      samples[i] = lpFilter;
+      // 双极点柔化滤波 (过滤尖锐毛刺，仅保留 40~600Hz 最厚实安抚人心的频率)
+      lpFilter = lpFilter + 0.16 * (brown - lpFilter);
+
+      // 0.08Hz 极慢温润呼吸律动调制
+      final breathMod = 0.92 + 0.08 * sin(2.0 * pi * 0.08 * (i / sampleRate));
+
+      samples[i] = lpFilter * 1.8 * breathMod;
+    }
+
+    _applyCrossfade(samples, crossfadeSamples: (sampleRate * 0.4).toInt());
+    return _encodePcmWav(samples, sampleRate: sampleRate);
+  }
+
+  /// 1. 雨落窗台 (Rain on Window): 醇厚布朗噪音底噪 + 随机轻柔雨滴拍击
+  Uint8List _synthesizeRainWav({required int sampleRate, required double durationSec}) {
+    final totalSamples = (sampleRate * durationSec).toInt();
+    final samples = Float32List(totalSamples);
+    final random = Random(42);
+
+    double brown = 0.0;
+    double lpFilter = 0.0;
+
+    for (int i = 0; i < totalSamples; i++) {
+      final white = (random.nextDouble() * 2.0 - 1.0);
+
+      // 底噪升级为布朗噪音算法 (消除粉红噪音可能残留的轻微沙沙感)
+      brown = (brown * 0.985) + (white * 0.075);
+      lpFilter = lpFilter + 0.15 * (brown - lpFilter);
+      samples[i] = lpFilter * 1.25;
     }
 
     // 叠加随机雨滴敲击 (Droplet Patter)

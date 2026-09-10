@@ -17,11 +17,11 @@ class PomodoroProvider with ChangeNotifier {
   String? _selectedTaskId;
   String? _selectedTaskTitle;
   DateTime? _sessionStartTime;
-  String _selectedSound = '雨落窗台'; // 默认开启极佳的雨落窗台专注白噪音
+  String _selectedSound = '布朗噪音'; // 默认开启纯正深邃的布朗噪音 (Brown Noise 1/f²)
   bool _isPreviewPlaying = false;
 
   final List<int> _presetMinutes = [15, 25, 35, 45];
-  final List<String> _soundPresets = ['雨落窗台', '机械打字', '夜色篝火', '静音模式'];
+  final List<String> _soundPresets = ['布朗噪音', '雨落窗台', '机械打字', '夜色篝火', '静音模式'];
 
   int get targetMinutes => _targetMinutes;
   int get remainingSeconds => _remainingSeconds;

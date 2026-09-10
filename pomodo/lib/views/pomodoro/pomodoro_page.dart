@@ -356,6 +356,7 @@ class PomodoroPage extends StatelessWidget {
   /// 离线白噪音声学微仓 (pomo-ambient-dock)
   Widget _buildAmbientDock(PomodoroProvider pomo) {
     const ambientOptions = [
+      {'name': '布朗噪音', 'icon': '🌊', 'key': '布朗噪音'},
       {'name': '雨落窗台', 'icon': '🌧️', 'key': '雨落窗台'},
       {'name': '机械打字', 'icon': '☕', 'key': '机械打字'},
       {'name': '夜色篝火', 'icon': '🌲', 'key': '夜色篝火'},
@@ -387,7 +388,7 @@ class PomodoroPage extends StatelessWidget {
                   Icon(Icons.graphic_eq_rounded, size: 16, color: AppTheme.marsGreen),
                   SizedBox(width: 6),
                   Text(
-                    '离线白噪音声学微仓',
+                    '布朗声学微仓 (1/f² 心流)',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -440,21 +441,24 @@ class PomodoroPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // 4 颗环境声微药丸
-          Row(
-            children: ambientOptions.map((opt) {
-              final isSelected = pomo.selectedSound == opt['key'];
-              final isPlayingThis = isSelected && (pomo.isRunning || pomo.isPreviewPlaying);
+          // 5 颗环境声微药丸 (横向弹性排列)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: ambientOptions.map((opt) {
+                final isSelected = pomo.selectedSound == opt['key'];
+                final isPlayingThis = isSelected && (pomo.isRunning || pomo.isPreviewPlaying);
 
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
                   child: GestureDetector(
                     onTap: () {
                       pomo.setSelectedSound(opt['key']!);
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
+                      width: 72,
                       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
                       decoration: BoxDecoration(
                         color: isSelected ? const Color(0xFFE8F5F4) : const Color(0xFFF8FAFC),
@@ -468,7 +472,6 @@ class PomodoroPage extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (isPlayingThis && opt['key'] != '静音模式') ...[
-                            // 动态跳跃波形指示
                             const _SoundWaveBars(),
                             const SizedBox(height: 4),
                           ] else ...[
@@ -489,9 +492,9 @@ class PomodoroPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
         ],
       ),
