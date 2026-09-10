@@ -91,13 +91,14 @@ class TaskProvider with ChangeNotifier {
     });
   }
 
-  Future<void> addTask({
+  Future<Task> addTask({
     required String title,
     String? notes,
     String priority = 'P1',
-    String workload = 'medium',
+    String workload = 'easy',
     int? ivyOrder,
     String? dueDate,
+    String? categoryId,
   }) async {
     final now = DateTime.now().toIso8601String();
     final nextIvy = ivyOrder ?? (_tasks.where((t) => !t.isCompleted).length + 1);
@@ -111,12 +112,14 @@ class TaskProvider with ChangeNotifier {
       status: 'pending',
       workload: workload,
       dueDate: dueDate,
+      categoryId: categoryId,
       createdAt: now,
       updatedAt: now,
     );
 
     await _dbHelper.insertTask(newTask);
     await loadTasks();
+    return newTask;
   }
 
   Future<void> toggleTask(String id) async {
@@ -153,6 +156,40 @@ class TaskProvider with ChangeNotifier {
     final updated = task.copyWith(updatedAt: DateTime.now().toIso8601String());
     await _dbHelper.updateTask(updated);
     await loadTasks();
+  }
+
+  // === 子任务管理 ===
+  Future<List<Subtask>> getSubtasks(String taskId) async {
+    return await _dbHelper.getSubtasks(taskId);
+  }
+
+  Future<void> addSubtask(String taskId, String title) async {
+    final subtasks = await _dbHelper.getSubtasks(taskId);
+    final newSubtask = Subtask(
+      id: 'sub_${DateTime.now().millisecondsSinceEpoch}',
+      taskId: taskId,
+      title: title.trim(),
+      sortOrder: subtasks.length + 1,
+    );
+    await _dbHelper.insertSubtask(newSubtask);
+    notifyListeners();
+  }
+
+  Future<void> toggleSubtask(Subtask subtask) async {
+    final updated = Subtask(
+      id: subtask.id,
+      taskId: subtask.taskId,
+      title: subtask.title,
+      isCompleted: !subtask.isCompleted,
+      sortOrder: subtask.sortOrder,
+    );
+    await _dbHelper.updateSubtask(updated);
+    notifyListeners();
+  }
+
+  Future<void> deleteSubtask(String id) async {
+    await _dbHelper.deleteSubtask(id);
+    notifyListeners();
   }
 
   Future<void> reorderIvyTasks(int oldIndex, int newIndex) async {

@@ -4,7 +4,14 @@ import '../../core/theme/app_theme.dart';
 import '../../models/task.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/pomodoro_provider.dart';
+import 'task_detail_sheet.dart';
 
+/// 100% 像素级对齐设计稿的「今日待办」页面
+/// 架构特性：
+/// 1. Things 3 风格纯白通透空气感大标题 + POMODO 品牌标识 + 离线单机·SQLite 状态胶囊
+/// 2. 通透极简周历条 (无外层卡片框，自然悬浮)
+/// 3. Pure Task Card 雅致纯净任务流（圆形极简 Checkbox、⏰ 时间·标签、🍅 专注直达、艾利法 1~5 序号）
+/// 4. 方案 C 悬浮灵动输入胶囊 (Floating Pill Dock)，回车入列 + 圆形加号呼出完整属性抽屉
 class TodayPage extends StatefulWidget {
   final Function(int)? onNavigateTab;
 
@@ -28,471 +35,10 @@ class _TodayPageState extends State<TodayPage> {
     super.dispose();
   }
 
-  void _showCreateTaskDialog(BuildContext context) {
-    final titleController = TextEditingController();
-    final noteController = TextEditingController();
-    String priority = 'P1';
-    String workload = 'medium';
-    final now = DateTime.now();
-    final isSelectedToday = _selectedDate.year == now.year &&
-        _selectedDate.month == now.month &&
-        _selectedDate.day == now.day;
-    final dateStr =
-        '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Container(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                top: 24,
-                left: 20,
-                right: 20,
-              ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.black12,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    isSelectedToday ? '新建待办任务' : '新建 ${_selectedDate.month}月${_selectedDate.day}日 待办',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: titleController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: isSelectedToday ? '想在今天专注完成什么？' : '想在这一天专注完成什么？',
-                      hintStyle: TextStyle(color: AppTheme.textMuted),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.borderLight),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.borderLight),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.marsGreen, width: 1.5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: noteController,
-                    maxLines: 2,
-                    decoration: InputDecoration(
-                      hintText: '备忘或具体步骤（选填）',
-                      hintStyle: TextStyle(color: AppTheme.textMuted),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.borderLight),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.borderLight),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      const Text(
-                        '艾利优先级：',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(width: 8),
-                      ...['P1', 'P2', 'P3', 'P4'].map((p) {
-                        final isSelected = priority == p;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: ChoiceChip(
-                            label: Text(p),
-                            selected: isSelected,
-                            selectedColor: AppTheme.priorityColor(p).withOpacity(0.18),
-                            labelStyle: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected ? AppTheme.priorityColor(p) : AppTheme.textSecondary,
-                            ),
-                            onSelected: (val) {
-                              if (val) setModalState(() => priority = p);
-                            },
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (titleController.text.trim().isEmpty) return;
-                        context.read<TaskProvider>().addTask(
-                              title: titleController.text,
-                              notes: noteController.text.isEmpty ? null : noteController.text,
-                              priority: priority,
-                              workload: workload,
-                              dueDate: isSelectedToday ? null : dateStr,
-                            );
-                        Navigator.pop(ctx);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.marsGreen,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text('立即创建', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final isSelectedToday = _selectedDate.year == today.year &&
-        _selectedDate.month == today.month &&
-        _selectedDate.day == today.day;
-    const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
-    final monthDayStr =
-        '${_selectedDate.month}月${_selectedDate.day}日 星期${weekdays[_selectedDate.weekday - 1]}';
-
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: SafeArea(
-        child: Consumer<TaskProvider>(
-          builder: (context, taskProv, child) {
-            final tasks = taskProv.tasksForDate(_selectedDate);
-            final completedCount = tasks.where((t) => t.isCompleted).length;
-
-            return CustomScrollView(
-              slivers: [
-                // 顶部 Things 3 纯白通透标题
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              monthDayStr,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.marsGreen,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppTheme.marsGreen.withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.check_circle_outline, size: 14, color: AppTheme.marsGreen),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '$completedCount/${tasks.length}',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppTheme.marsGreen,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              isSelectedToday ? '今日' : '${_selectedDate.day}日待办',
-                              style: const TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.8,
-                                color: AppTheme.textPrimary,
-                              ),
-                            ),
-                            if (!isSelectedToday) ...[
-                              const SizedBox(width: 12),
-                              GestureDetector(
-                                onTap: () {
-                                  final n = DateTime.now();
-                                  setState(() => _selectedDate = DateTime(n.year, n.month, n.day));
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.marsGreen.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: AppTheme.marsGreen.withOpacity(0.3)),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.today_rounded, size: 14, color: AppTheme.marsGreen),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        '回今天',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppTheme.marsGreen,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-
-                        // 周历指示胶囊
-                        _buildWeekStrip(taskProv),
-                        const SizedBox(height: 16),
-
-                        // 快速添加输入胶囊
-                        _buildQuickAddBar(context, isSelectedToday),
-                        const SizedBox(height: 16),
-
-                        // 筛选过滤器
-                        _buildFilterRow(taskProv),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // 任务列表
-                if (taskProv.isLoading)
-                  const SliverFillRemaining(
-                    child: Center(
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.marsGreen),
-                    ),
-                  )
-                else if (tasks.isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isSelectedToday ? Icons.spa_outlined : Icons.event_note_outlined,
-                            size: 56,
-                            color: Colors.black.withOpacity(0.15),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            isSelectedToday
-                                ? '今天的所有任务都已完成'
-                                : '${_selectedDate.month}月${_selectedDate.day}日 暂无待办任务',
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textMuted),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            isSelectedToday
-                                ? '享受内心的从容与平静'
-                                : '可在上方输入框为此日期规划要事',
-                            style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
-                          ),
-                          if (!isSelectedToday) ...[
-                            const SizedBox(height: 16),
-                            OutlinedButton.icon(
-                              onPressed: () {
-                                final now = DateTime.now();
-                                setState(() => _selectedDate = DateTime(now.year, now.month, now.day));
-                              },
-                              icon: const Icon(Icons.arrow_back_rounded, size: 16, color: AppTheme.marsGreen),
-                              label: const Text('返回今日待办',
-                                  style: TextStyle(color: AppTheme.marsGreen, fontWeight: FontWeight.w600)),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: AppTheme.marsGreen),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final task = tasks[index];
-                          return _buildTaskCard(context, task);
-                        },
-                        childCount: tasks.length,
-                      ),
-                    ),
-                  ),
-
-                const SliverToBoxAdapter(child: SizedBox(height: 90)),
-              ],
-            );
-          },
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateTaskDialog(context),
-        backgroundColor: AppTheme.marsGreen,
-        elevation: 3,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-      ),
-    );
-  }
-
-  Widget _buildWeekStrip(TaskProvider taskProv) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final startOfWeek = today.subtract(Duration(days: today.weekday - 1));
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderLight),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(7, (i) {
-          final date = startOfWeek.add(Duration(days: i));
-          final isSelected = date.year == _selectedDate.year &&
-              date.month == _selectedDate.month &&
-              date.day == _selectedDate.day;
-          final isToday = date.year == today.year &&
-              date.month == today.month &&
-              date.day == today.day;
-          final hasTasks = taskProv.hasTasksOnDate(date);
-          const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
-
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedDate = date;
-                });
-              },
-              behavior: HitTestBehavior.opaque,
-              child: Center(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.marsGreen : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: AppTheme.marsGreen.withOpacity(0.25),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            )
-                          ]
-                        : [],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        weekdays[i],
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isSelected ? Colors.white70 : AppTheme.textMuted,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${date.day}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: isSelected ? Colors.white : AppTheme.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      // 今天或有任务提示小圆点
-                      Container(
-                        width: 4,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isSelected
-                              ? (isToday ? Colors.white : (hasTasks ? Colors.white70 : Colors.transparent))
-                              : (isToday
-                                  ? AppTheme.marsGreen
-                                  : (hasTasks ? AppTheme.marsGreen.withOpacity(0.5) : Colors.transparent)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  void _quickAddTask(BuildContext context) {
+  void _quickAddSubmit(BuildContext context) {
     final text = _quickTitleController.text.trim();
     if (text.isEmpty) return;
+
     final now = DateTime.now();
     final isToday = _selectedDate.year == now.year &&
         _selectedDate.month == now.month &&
@@ -508,222 +54,616 @@ class _TodayPageState extends State<TodayPage> {
     FocusScope.of(context).unfocus();
   }
 
-  Widget _buildQuickAddBar(BuildContext context, bool isSelectedToday) {
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final isSelectedToday = _selectedDate.year == today.year &&
+        _selectedDate.month == today.month &&
+        _selectedDate.day == today.day;
+    const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+    final monthDayStr =
+        '${_selectedDate.month}月${_selectedDate.day}日 星期${weekdays[_selectedDate.weekday - 1]}';
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFFAFAFA),
+      body: SafeArea(
+        child: Consumer<TaskProvider>(
+          builder: (context, taskProv, child) {
+            final tasks = taskProv.tasksForDate(_selectedDate);
+
+            return Stack(
+              children: [
+                CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  slivers: [
+                    // 1. Things 3 纯白通透标题区
+                    SliverToBoxAdapter(
+                      child: Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 顶栏：● POMODO 品牌标 + 离线单机·SQLite 状态胶囊
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: AppTheme.marsGreen,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    const Text(
+                                      'POMODO',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppTheme.marsGreen,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: const Text(
+                                    '离线单机 · SQLite',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+
+                            // 大标题：今日待办 (或 X日待办)
+                            Row(
+                              children: [
+                                Text(
+                                  isSelectedToday ? '今日待办' : '${_selectedDate.day}日待办',
+                                  style: const TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.6,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                if (!isSelectedToday) ...[
+                                  const SizedBox(width: 10),
+                                  GestureDetector(
+                                    onTap: () {
+                                      final n = DateTime.now();
+                                      setState(() => _selectedDate =
+                                          DateTime(n.year, n.month, n.day));
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.marsGreen.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                            color: AppTheme.marsGreen.withOpacity(0.3)),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.today_rounded,
+                                              size: 12, color: AppTheme.marsGreen),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            '回今天',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppTheme.marsGreen,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+
+                            // 副标题：9月9日 星期三 · 4 个待办事项
+                            Text(
+                              '$monthDayStr · ${tasks.length} 个待办事项',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF64748B),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // 2. Things 3 风格极简周历条 (通透悬浮，无外包卡片框)
+                    SliverToBoxAdapter(
+                      child: _buildWeekStrip(taskProv),
+                    ),
+
+                    // 3. 任务列表流
+                    if (taskProv.isLoading)
+                      const SliverFillRemaining(
+                        child: Center(
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: AppTheme.marsGreen),
+                        ),
+                      )
+                    else if (tasks.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isSelectedToday
+                                    ? Icons.spa_outlined
+                                    : Icons.event_note_outlined,
+                                size: 52,
+                                color: const Color(0xFF94A3B8).withOpacity(0.4),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                isSelectedToday
+                                    ? '今天的所有任务都已完成'
+                                    : '${_selectedDate.month}月${_selectedDate.day}日 暂无日程任务',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                isSelectedToday
+                                    ? '享受内心的从容与专注'
+                                    : '在下方灵动输入框或点击 + 为该日规划要事',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                              ),
+                              if (!isSelectedToday) ...[
+                                const SizedBox(height: 14),
+                                OutlinedButton.icon(
+                                  onPressed: () {
+                                    final n = DateTime.now();
+                                    setState(() => _selectedDate =
+                                        DateTime(n.year, n.month, n.day));
+                                  },
+                                  icon: const Icon(Icons.arrow_back_rounded,
+                                      size: 14, color: AppTheme.marsGreen),
+                                  label: const Text(
+                                    '返回今日待办',
+                                    style: TextStyle(
+                                      color: AppTheme.marsGreen,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: AppTheme.marsGreen),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 6),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final task = tasks[index];
+                              return _buildPureTaskCard(context, task);
+                            },
+                            childCount: tasks.length,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+
+                // 4. 方案 C 悬浮灵动输入胶囊 (Floating Pill Dock)
+                _buildFloatingPillDock(context),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Things 3 风格极简周历条 (通透无压迫，轻微底部细分割线)
+  Widget _buildWeekStrip(TaskProvider taskProv) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final startOfWeek = today.subtract(Duration(days: today.weekday - 1));
+
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.borderLight),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: 14),
-          const Icon(Icons.add_circle_outline, color: AppTheme.marsGreen, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: _quickTitleController,
-              decoration: InputDecoration(
-                hintText: isSelectedToday
-                    ? '快速添加今日要事...'
-                    : '添加 ${_selectedDate.month}月${_selectedDate.day}日 待办...',
-                hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              onSubmitted: (_) => _quickAddTask(context),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.arrow_upward_rounded, size: 18, color: AppTheme.marsGreen),
-            onPressed: () => _quickAddTask(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterRow(TaskProvider provider) {
-    return Row(
-      children: [
-        _filterPill('全部', TaskFilter.all, provider),
-        const SizedBox(width: 8),
-        _filterPill('进行中', TaskFilter.pending, provider),
-        const SizedBox(width: 8),
-        _filterPill('已完成', TaskFilter.completed, provider),
-      ],
-    );
-  }
-
-  Widget _filterPill(String label, TaskFilter filter, TaskProvider provider) {
-    final isActive = provider.currentFilter == filter;
-    return GestureDetector(
-      onTap: () => provider.setFilter(filter),
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive ? AppTheme.marsGreen.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isActive ? AppTheme.marsGreen : AppTheme.borderLight,
-            width: isActive ? 1.2 : 1.0,
-          ),
+        padding: const EdgeInsets.only(bottom: 8),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9), width: 1)),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-            color: isActive ? AppTheme.marsGreen : AppTheme.textSecondary,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(7, (i) {
+            final date = startOfWeek.add(Duration(days: i));
+            final isSelected = date.year == _selectedDate.year &&
+                date.month == _selectedDate.month &&
+                date.day == _selectedDate.day;
+            final isToday = date.year == today.year &&
+                date.month == today.month &&
+                date.day == today.day;
+            final hasTasks = taskProv.hasTasksOnDate(date);
+            const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+
+            return Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() => _selectedDate = date);
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      weekdays[i],
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF94A3B8),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppTheme.marsGreen : Colors.transparent,
+                        shape: BoxShape.circle,
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: AppTheme.marsGreen.withOpacity(0.32),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                )
+                              ]
+                            : [],
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '${date.day}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                          color: isSelected ? Colors.white : const Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    // 任务小圆点
+                    Container(
+                      width: 3,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: hasTasks
+                            ? (isSelected
+                                ? AppTheme.marsGreen
+                                : AppTheme.marsGreen.withOpacity(0.8))
+                            : (isToday
+                                ? const Color(0xFFCBD5E1)
+                                : Colors.transparent),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
         ),
       ),
     );
   }
 
-  Widget _buildTaskCard(BuildContext context, Task task) {
-    final pColor = AppTheme.priorityColor(task.priority);
+  /// Things 3 / Linear 雅致纯净任务卡片 (Pure Task Card)
+  Widget _buildPureTaskCard(BuildContext context, Task task) {
+    final isDone = task.isCompleted;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.borderLight),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.015),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: isDone ? const Color(0xFFFAFAFA) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDone ? const Color(0xFFF1F5F9) : const Color(0xFFF1F5F9),
+        ),
+        boxShadow: isDone
+            ? []
+            : [
+                BoxShadow(
+                  color: const Color(0xFF0F172A).withOpacity(0.03),
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
+                ),
+              ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => context.read<TaskProvider>().toggleTask(task.id),
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            // 点击整卡展开任务属性抽屉
+            TaskDetailSheet.show(
+              context,
+              task: task,
+              initialDate: _selectedDate,
+              onNavigateTab: widget.onNavigateTab,
+            );
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 复选框
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                    color: task.isCompleted ? AppTheme.marsGreen : Colors.white,
-                    border: Border.all(
-                      color: task.isCompleted ? AppTheme.marsGreen : Colors.black26,
-                      width: 1.5,
+                // 圆形极简 Checkbox (Things 3 经典)
+                GestureDetector(
+                  onTap: () {
+                    context.read<TaskProvider>().toggleTask(task.id);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 19,
+                    height: 19,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isDone ? AppTheme.marsGreen : Colors.transparent,
+                      border: Border.all(
+                        color: isDone ? AppTheme.marsGreen : const Color(0xFFCBD5E1),
+                        width: 1.6,
+                      ),
                     ),
+                    child: isDone
+                        ? const Icon(Icons.check, size: 12, color: Colors.white)
+                        : null,
                   ),
-                  child: task.isCompleted
-                      ? const Icon(Icons.check, size: 16, color: Colors.white)
-                      : null,
                 ),
                 const SizedBox(width: 12),
 
-                // 标题与副标题
+                // 标题与元数据
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         task.title,
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: task.isCompleted ? AppTheme.textMuted : AppTheme.textPrimary,
-                          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                          decorationColor: AppTheme.textMuted,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                          color: isDone
+                              ? const Color(0xFF94A3B8)
+                              : const Color(0xFF0F172A),
+                          decoration: isDone ? TextDecoration.lineThrough : null,
+                          decorationColor: const Color(0xFF94A3B8),
                         ),
                       ),
-                      if (task.notes != null && task.notes!.isNotEmpty) ...[
-                        const SizedBox(height: 3),
-                        Text(
-                          task.notes!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.textMuted,
-                            decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          if (task.dueDate != null) ...[
+                            Text(
+                              '⏰ ${task.dueDate!.substring(5)}',
+                              style: const TextStyle(
+                                  fontSize: 11, color: Color(0xFF64748B)),
+                            ),
+                            const Text(' · ',
+                                style:
+                                    TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                          ],
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              task.categoryId == 'cat_life' ? '晨练日常' : '工作日常',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF475569),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                          if (task.notes != null && task.notes!.isNotEmpty) ...[
+                            const SizedBox(width: 6),
+                            const Text('📝', style: TextStyle(fontSize: 10)),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ),
 
-                // 优先级标识
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: pColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    task.priority,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: pColor,
+                // 右侧操作簇: 方案 A 快捷直达 🍅 专注 + 艾利序号
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        final pomoProv = context.read<PomodoroProvider>();
+                        pomoProv.selectTask(task.id, task.title);
+                        pomoProv.start();
+                        widget.onNavigateTab?.call(1);
+                      },
+                      child: Container(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5F4),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0x2E008779)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('🍅', style: TextStyle(fontSize: 11)),
+                            SizedBox(width: 3),
+                            Text(
+                              '专注',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.marsGreen,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
+                    const SizedBox(width: 8),
 
-                // 快捷关联专注按钮
-                IconButton(
-                  icon: const Icon(Icons.timer_outlined, size: 18, color: AppTheme.textMuted),
-                  visualDensity: VisualDensity.compact,
-                  tooltip: '以此任务开始专注',
-                  onPressed: () {
-                    context.read<PomodoroProvider>().selectTask(task.id, task.title);
-                    if (widget.onNavigateTab != null) {
-                      widget.onNavigateTab!(1); // 切换至专注 Tab
-                    }
-                  },
-                ),
-
-                // 删除菜单
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, size: 18, color: AppTheme.textMuted),
-                  padding: EdgeInsets.zero,
-                  itemBuilder: (ctx) => [
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline, size: 18, color: AppTheme.priorityP1),
-                          SizedBox(width: 8),
-                          Text('删除任务', style: TextStyle(color: AppTheme.priorityP1)),
-                        ],
+                    // 艾利法序号：等宽弱字，不刺眼
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '${task.ivyOrder}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF94A3B8),
+                          fontFamily: 'monospace',
+                        ),
                       ),
                     ),
                   ],
-                  onSelected: (val) {
-                    if (val == 'delete') {
-                      context.read<TaskProvider>().deleteTask(task.id);
-                    }
-                  },
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// 方案 C：悬浮灵动输入胶囊 (Floating Pill Dock · Linear / Things 风格)
+  Widget _buildFloatingPillDock(BuildContext context) {
+    return Positioned(
+      left: 16,
+      right: 16,
+      bottom: 16,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 5, 6, 5),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.96),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0xFFE2E8F0).withOpacity(0.85)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0F172A).withOpacity(0.08),
+              blurRadius: 28,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _quickTitleController,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF0F172A),
+                ),
+                decoration: const InputDecoration(
+                  hintText: '+ 快速记录待办，按 Enter 入列...',
+                  hintStyle: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF94A3B8),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                ),
+                onSubmitted: (_) => _quickAddSubmit(context),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // 右侧绿色圆圈 + 号按钮，展开完整属性抽屉
+            GestureDetector(
+              onTap: () {
+                TaskDetailSheet.show(
+                  context,
+                  initialDate: _selectedDate,
+                  onNavigateTab: widget.onNavigateTab,
+                );
+              },
+              child: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.marsGreen,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.marsGreen.withOpacity(0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.add, size: 18, color: Colors.white),
+              ),
+            ),
+          ],
         ),
       ),
     );

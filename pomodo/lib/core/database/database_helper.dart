@@ -237,6 +237,15 @@ class DatabaseHelper {
     );
   }
 
+  Future<int> deleteSubtask(String id) async {
+    final db = await instance.database;
+    return await db.delete(
+      'subtasks',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // === Pomodoro Sessions ===
   Future<List<PomodoroSession>> getAllSessions() async {
     final db = await instance.database;
