@@ -225,14 +225,56 @@ class PomodoroPage extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.graphic_eq, size: 18, color: AppTheme.marsGreen),
-                            SizedBox(width: 8),
-                            Text(
+                            const Icon(Icons.graphic_eq, size: 18, color: AppTheme.marsGreen),
+                            const SizedBox(width: 8),
+                            const Text(
                               '环境白噪音',
                               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                             ),
+                            if (pomo.selectedSound != '静音模式') ...[
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () => pomo.toggleSoundPreview(),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: (pomo.isRunning || pomo.isPreviewPlaying)
+                                        ? AppTheme.marsGreen.withOpacity(0.15)
+                                        : const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        (pomo.isRunning || pomo.isPreviewPlaying)
+                                            ? Icons.volume_up
+                                            : Icons.volume_mute,
+                                        size: 13,
+                                        color: (pomo.isRunning || pomo.isPreviewPlaying)
+                                            ? AppTheme.marsGreen
+                                            : const Color(0xFF64748B),
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        pomo.isRunning
+                                            ? '播放中'
+                                            : (pomo.isPreviewPlaying ? '试听中' : '试听'),
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: (pomo.isRunning || pomo.isPreviewPlaying)
+                                              ? AppTheme.marsGreen
+                                              : const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                         DropdownButtonHideUnderline(

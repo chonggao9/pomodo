@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/white_noise_service.dart';
 import 'providers/task_provider.dart';
 import 'providers/pomodoro_provider.dart';
 import 'providers/profile_provider.dart';
@@ -24,6 +25,9 @@ void main() async {
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
+
+  // 3. 异步预热并合成离线白噪音音频文件
+  WhiteNoiseService.instance.init();
 
   runApp(const PomoDoApp());
 }

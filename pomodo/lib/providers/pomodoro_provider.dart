@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../core/database/database_helper.dart';
+import '../core/services/white_noise_service.dart';
 import '../models/pomodoro_session.dart';
 
 enum PomodoroState { idle, running, paused, completed }
@@ -16,10 +17,11 @@ class PomodoroProvider with ChangeNotifier {
   String? _selectedTaskId;
   String? _selectedTaskTitle;
   DateTime? _sessionStartTime;
-  String _selectedSound = '静音模式';
+  String _selectedSound = '雨落窗台'; // 默认开启极佳的雨落窗台专注白噪音
+  bool _isPreviewPlaying = false;
 
   final List<int> _presetMinutes = [15, 25, 35, 45];
-  final List<String> _soundPresets = ['静音模式', '雨落窗台', '机械打字', '夜色篝火'];
+  final List<String> _soundPresets = ['雨落窗台', '机械打字', '夜色篝火', '静音模式'];
 
   int get targetMinutes => _targetMinutes;
   int get remainingSeconds => _remainingSeconds;
@@ -29,6 +31,7 @@ class PomodoroProvider with ChangeNotifier {
   String? get selectedTaskId => _selectedTaskId;
   String? get selectedTaskTitle => _selectedTaskTitle;
   String get selectedSound => _selectedSound;
+  bool get isPreviewPlaying => _isPreviewPlaying;
   List<int> get presetMinutes => _presetMinutes;
   List<String> get soundPresets => _soundPresets;
 
@@ -56,6 +59,29 @@ class PomodoroProvider with ChangeNotifier {
 
   void setSelectedSound(String sound) {
     _selectedSound = sound;
+    if (_state == PomodoroState.running) {
+      _playCurrentSound();
+    } else if (_isPreviewPlaying) {
+      if (sound == '静音模式') {
+        _stopSound();
+      } else {
+        WhiteNoiseService.instance.play(_selectedSound);
+      }
+    }
+    notifyListeners();
+  }
+
+  void toggleSoundPreview() {
+    if (_state == PomodoroState.running) return; // 正在专注运行时无需手动试听
+
+    if (_isPreviewPlaying) {
+      _stopSound();
+    } else {
+      if (_selectedSound != '静音模式') {
+        _isPreviewPlaying = true;
+        WhiteNoiseService.instance.play(_selectedSound);
+      }
+    }
     notifyListeners();
   }
 
@@ -74,6 +100,9 @@ class PomodoroProvider with ChangeNotifier {
     }
 
     _state = PomodoroState.running;
+    _isPreviewPlaying = false;
+    _playCurrentSound();
+
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingSeconds > 0) {
@@ -90,11 +119,28 @@ class PomodoroProvider with ChangeNotifier {
     if (_state != PomodoroState.running) return;
     _timer?.cancel();
     _state = PomodoroState.paused;
+    WhiteNoiseService.instance.pause();
     notifyListeners();
   }
 
   void resume() {
-    start();
+    if (_state == PomodoroState.paused) {
+      _state = PomodoroState.running;
+      WhiteNoiseService.instance.resume();
+
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (_remainingSeconds > 0) {
+          _remainingSeconds--;
+          notifyListeners();
+        } else {
+          _finishSession();
+        }
+      });
+      notifyListeners();
+    } else {
+      start();
+    }
   }
 
   void reset() {
@@ -102,12 +148,27 @@ class PomodoroProvider with ChangeNotifier {
     _remainingSeconds = _targetMinutes * 60;
     _state = PomodoroState.idle;
     _sessionStartTime = null;
+    _stopSound();
     notifyListeners();
+  }
+
+  void _playCurrentSound() {
+    if (_selectedSound == '静音模式') {
+      WhiteNoiseService.instance.stop();
+    } else {
+      WhiteNoiseService.instance.play(_selectedSound);
+    }
+  }
+
+  void _stopSound() {
+    _isPreviewPlaying = false;
+    WhiteNoiseService.instance.stop();
   }
 
   Future<void> _finishSession() async {
     _timer?.cancel();
     _state = PomodoroState.completed;
+    _stopSound();
 
     final now = DateTime.now();
     final session = PomodoroSession(
@@ -127,6 +188,7 @@ class PomodoroProvider with ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
+    WhiteNoiseService.instance.stop();
     super.dispose();
   }
 }
