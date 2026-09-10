@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
+import '../core/i18n/app_strings.dart';
 import 'today/today_page.dart';
 import 'pomodoro/pomodoro_page.dart';
 import 'stats/stats_page.dart';
@@ -30,6 +31,9 @@ class _HomePageState extends State<HomePage> {
       const ProfilePage(),
     ];
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final strings = AppStrings.of(context);
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -37,13 +41,16 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppTheme.darkBgSurface : Colors.white,
           border: Border(
-            top: BorderSide(color: AppTheme.borderLight, width: 1.0),
+            top: BorderSide(
+              color: isDark ? AppTheme.darkBorder : AppTheme.borderLight,
+              width: 1.0,
+            ),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -53,32 +60,32 @@ class _HomePageState extends State<HomePage> {
           currentIndex: _currentIndex,
           onTap: _onTabTapped,
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
+          backgroundColor: isDark ? AppTheme.darkBgSurface : Colors.white,
           selectedItemColor: AppTheme.marsGreen,
-          unselectedItemColor: AppTheme.textMuted,
+          unselectedItemColor: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted,
           selectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
           unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           elevation: 0,
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.check_circle_outline_rounded),
-              activeIcon: Icon(Icons.check_circle_rounded),
-              label: '今日',
+              icon: const Icon(Icons.check_circle_outline_rounded),
+              activeIcon: const Icon(Icons.check_circle_rounded),
+              label: strings.tabToday,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.timelapse_outlined),
-              activeIcon: Icon(Icons.timelapse_rounded),
-              label: '专注',
+              icon: const Icon(Icons.timelapse_outlined),
+              activeIcon: const Icon(Icons.timelapse_rounded),
+              label: strings.tabFocus,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_outlined),
-              activeIcon: Icon(Icons.bar_chart_rounded),
-              label: '复盘',
+              icon: const Icon(Icons.bar_chart_outlined),
+              activeIcon: const Icon(Icons.bar_chart_rounded),
+              label: strings.tabStats,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: '我的',
+              icon: const Icon(Icons.person_outline_rounded),
+              activeIcon: const Icon(Icons.person_rounded),
+              label: strings.tabMine,
             ),
           ],
         ),

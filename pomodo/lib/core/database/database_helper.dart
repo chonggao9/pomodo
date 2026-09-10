@@ -355,6 +355,64 @@ class DatabaseHelper {
     };
   }
 
+  /// 真实徽章成就计算 (100% SQLite 聚合统计)
+  Future<Map<String, dynamic>> getBadgeAchievements() async {
+    final db = await instance.database;
+
+    // 1. 时间掌控者: 累计完成核心待办任务达到 7 项
+    final completedTasks = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE status = "completed"')) ?? 0;
+    final timeMasterUnlocked = completedTasks >= 7;
+
+    // 2. 专注魔王: 累计专注达到 50 小时 (3000 分钟)
+    final totalFocusMinutes = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(duration_minutes) FROM pomodoro_sessions WHERE status = "completed"')) ?? 0;
+    final focusKingUnlocked = totalFocusMinutes >= 3000;
+
+    // 3. 番茄富翁: 历史单日完成有效番茄钟达到 8 个
+    final maxDailyRes = await db.rawQuery('''
+      SELECT COUNT(*) as daily_cnt 
+      FROM pomodoro_sessions 
+      WHERE status = "completed" 
+      GROUP BY substr(started_at, 1, 10) 
+      ORDER BY daily_cnt DESC 
+      LIMIT 1
+    ''');
+    final maxDailyPomodoros = maxDailyRes.isNotEmpty ? ((maxDailyRes.first['daily_cnt'] as int?) ?? 0) : 0;
+    final pomoTycoonUnlocked = maxDailyPomodoros >= 8;
+
+    // 4. 夜行侠: 在 22:00 ~ 04:00 期间完成过至少 1 次专注
+    final nightRes = await db.rawQuery('''
+      SELECT COUNT(*) 
+      FROM pomodoro_sessions 
+      WHERE status = "completed" 
+        AND (strftime('%H', started_at) >= '22' OR strftime('%H', started_at) < '04')
+    ''');
+    final nightSessionsCount = Sqflite.firstIntValue(nightRes) ?? 0;
+    final nightOwlUnlocked = nightSessionsCount > 0;
+
+    return {
+      'time_master': {
+        'unlocked': timeMasterUnlocked,
+        'current': completedTasks,
+        'target': 7,
+      },
+      'focus_king': {
+        'unlocked': focusKingUnlocked,
+        'current': totalFocusMinutes,
+        'target': 3000,
+      },
+      'pomo_tycoon': {
+        'unlocked': pomoTycoonUnlocked,
+        'current': maxDailyPomodoros,
+        'target': 8,
+      },
+      'night_owl': {
+        'unlocked': nightOwlUnlocked,
+        'current': nightSessionsCount,
+        'target': 1,
+      },
+    };
+  }
+
   Future<void> resetDatabase() async {
     final path = await getDatabasePath();
     if (_database != null) {

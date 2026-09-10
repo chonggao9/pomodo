@@ -1,104 +1,104 @@
-import 'dart:io';
-import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:just_audio/just_audio.dart';
 
-/// 100% 离线自持、基于算法数学合成的白噪音与环境音引擎
-/// 零网络依赖、零版权风险，在本地生成舒缓的高品质无缝循环音效
+/// 工业级自然实录采样白噪音引擎 (基于 just_audio & Google ExoPlayer / Apple AVPlayer)
+/// 核心特性：
+/// 1. 100% 硬件级 Gapless 零间隙无缝循环 (LoopMode.one)
+/// 2. 真实自然声波切片 (窗台夜雨、深海潮汐、夜色篝火)，经过等功率 (Equal-Power) 交叉淡化处理，首尾连续无爆音
+/// 3. 1.0 秒平滑淡入 (Fade-in) 与 0.5 秒平滑淡出 (Fade-out)，消除声音突兀截断
 class WhiteNoiseService {
   static final WhiteNoiseService instance = WhiteNoiseService._internal();
   WhiteNoiseService._internal();
 
-  static const MethodChannel _channel = MethodChannel('com.pomodo.app/audio');
-
+  final AudioPlayer _player = AudioPlayer();
   bool _isInitialized = false;
+  bool _isPlaying = false;
   String? _currentPlayingSound;
-  final Map<String, String> _soundFiles = {};
+  double _targetVolume = 0.8;
 
   bool get isInitialized => _isInitialized;
+  bool get isPlaying => _isPlaying;
   String? get currentPlayingSound => _currentPlayingSound;
 
-  /// 初始化并预备离线白噪音音频文件
+  static const Map<String, String> _soundAssets = {
+    '🌧️ 窗台夜雨': 'assets/audio/rain.m4a',
+    '🌊 深海潮汐': 'assets/audio/waves.m4a',
+    '🌲 夜色篝火': 'assets/audio/campfire.m4a',
+  };
+
+  /// 别名解析器 (兼容无 emoji 或旧键名)
+  static String? _resolveAsset(String name) {
+    if (_soundAssets.containsKey(name)) return _soundAssets[name];
+    if (name.contains('雨')) return _soundAssets['🌧️ 窗台夜雨'];
+    if (name.contains('海') || name.contains('潮') || name.contains('浪') || name.contains('布朗')) {
+      return _soundAssets['🌊 深海潮汐'];
+    }
+    if (name.contains('火') || name.contains('篝')) return _soundAssets['🌲 夜色篝火'];
+    return null;
+  }
+
   Future<void> init() async {
     if (_isInitialized) return;
-
     try {
-      final docDir = await getApplicationDocumentsDirectory();
-      final soundDir = Directory('${docDir.path}/white_noise_brown_v1');
-      if (!await soundDir.exists()) {
-        await soundDir.create(recursive: true);
-      }
-
-      final brownNoiseFile = File('${soundDir.path}/brown_noise.wav');
-      final rainFile = File('${soundDir.path}/rain.wav');
-      final typewriterFile = File('${soundDir.path}/typewriter.wav');
-      final campfireFile = File('${soundDir.path}/campfire.wav');
-
-      // 仅在文件不存在或为空时生成，避免每次启动重复计算
-      if (!await brownNoiseFile.exists() || await brownNoiseFile.length() < 1000) {
-        final brownBytes = _synthesizeBrownNoiseWav(sampleRate: 22050, durationSec: 8.0);
-        await brownNoiseFile.writeAsBytes(brownBytes, flush: true);
-      }
-
-      if (!await rainFile.exists() || await rainFile.length() < 1000) {
-        final rainBytes = _synthesizeRainWav(sampleRate: 22050, durationSec: 7.0);
-        await rainFile.writeAsBytes(rainBytes, flush: true);
-      }
-
-      if (!await typewriterFile.exists() || await typewriterFile.length() < 1000) {
-        final typewriterBytes = _synthesizeTypewriterWav(sampleRate: 22050, durationSec: 6.0);
-        await typewriterFile.writeAsBytes(typewriterBytes, flush: true);
-      }
-
-      if (!await campfireFile.exists() || await campfireFile.length() < 1000) {
-        final campfireBytes = _synthesizeCampfireWav(sampleRate: 22050, durationSec: 7.0);
-        await campfireFile.writeAsBytes(campfireBytes, flush: true);
-      }
-
-      _soundFiles['布朗噪音'] = brownNoiseFile.path;
-      _soundFiles['雨落窗台'] = rainFile.path;
-      _soundFiles['机械打字'] = typewriterFile.path;
-      _soundFiles['夜色篝火'] = campfireFile.path;
-
+      await _player.setLoopMode(LoopMode.one);
       _isInitialized = true;
     } catch (e) {
       debugPrint('WhiteNoiseService init error: $e');
     }
   }
 
-  /// 播放指定环境音
-  Future<void> play(String soundName, {double volume = 0.65}) async {
-    if (soundName == '静音模式') {
+  /// 播放指定环境音（带 1.0s 平滑淡入）
+  Future<void> play(String soundName, {double volume = 0.8}) async {
+    if (soundName == '🔇 静音模式' || soundName.contains('静音')) {
       await stop();
       return;
     }
 
-    if (!_isInitialized) {
-      await init();
-    }
-
-    final filePath = _soundFiles[soundName];
-    if (filePath == null) {
-      debugPrint('No audio file found for sound: $soundName');
+    final assetPath = _resolveAsset(soundName);
+    if (assetPath == null) {
+      debugPrint('No audio asset found for: $soundName');
+      await stop();
       return;
     }
 
     try {
-      await _channel.invokeMethod('play', {
-        'path': filePath,
-        'volume': volume,
-      });
+      if (!_isInitialized) {
+        await init();
+      }
+
+      _targetVolume = volume.clamp(0.0, 1.0);
       _currentPlayingSound = soundName;
+
+      // 切换资源并设置单曲硬件级无限循环
+      await _player.setAsset(assetPath);
+      await _player.setLoopMode(LoopMode.one);
+
+      _isPlaying = true;
+      // 从 0 音量启动播放，随后进行 10 步平滑线性淡入 (1 秒)
+      await _player.setVolume(0.0);
+      _player.play();
+
+      for (int i = 1; i <= 10; i++) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (!_isPlaying || _currentPlayingSound != soundName) break;
+        await _player.setVolume((_targetVolume * i) / 10);
+      }
     } catch (e) {
       debugPrint('WhiteNoiseService play error: $e');
     }
   }
 
-  /// 暂停
+  /// 暂停（带 0.4s 平滑淡出）
   Future<void> pause() async {
+    if (!_isPlaying) return;
+    _isPlaying = false;
+
     try {
-      await _channel.invokeMethod('pause');
+      for (int i = 4; i >= 0; i--) {
+        await Future.delayed(const Duration(milliseconds: 80));
+        await _player.setVolume((_targetVolume * i) / 4);
+      }
+      await _player.pause();
     } catch (e) {
       debugPrint('WhiteNoiseService pause error: $e');
     }
@@ -106,263 +106,45 @@ class WhiteNoiseService {
 
   /// 继续播放
   Future<void> resume() async {
-    try {
-      await _channel.invokeMethod('resume');
-    } catch (e) {
-      debugPrint('WhiteNoiseService resume error: $e');
+    if (_currentPlayingSound != null) {
+      await play(_currentPlayingSound!, volume: _targetVolume);
     }
   }
 
-  /// 停止播放
+  /// 停止播放（带 0.4s 平滑淡出）
   Future<void> stop() async {
-    try {
-      await _channel.invokeMethod('stop');
+    if (!_isPlaying) {
       _currentPlayingSound = null;
+      return;
+    }
+    _isPlaying = false;
+    _currentPlayingSound = null;
+
+    try {
+      for (int i = 4; i >= 0; i--) {
+        await Future.delayed(const Duration(milliseconds: 80));
+        await _player.setVolume((_targetVolume * i) / 4);
+      }
+      await _player.stop();
     } catch (e) {
       debugPrint('WhiteNoiseService stop error: $e');
     }
   }
 
-  /// 设置音量 (0.0 ~ 1.0)
+  /// 动态调节音量
   Future<void> setVolume(double volume) async {
-    try {
-      await _channel.invokeMethod('setVolume', {
-        'volume': volume.clamp(0.0, 1.0),
-      });
-    } catch (e) {
-      debugPrint('WhiteNoiseService setVolume error: $e');
-    }
-  }
-
-  // =========================================================================
-  // 数学过程式音频合成器 (Procedural Audio Synthesizers)
-  // =========================================================================
-
-  /// 0. 纯正深邃布朗噪音 (Pure Brownian / Brown Noise):
-  /// 基于严格的一阶泄漏积分（Leaky Integrator）随机漫步，能量沿频率以 1/f²（-6dB/Octave）深度衰减
-  /// 辅以 0.08Hz 极低频自然呼吸起伏与双极点柔化滤波，呈现如深海潜流、温暖客舱巡航般的沉浸心流声场
-  Uint8List _synthesizeBrownNoiseWav({required int sampleRate, required double durationSec}) {
-    final totalSamples = (sampleRate * durationSec).toInt();
-    final samples = Float32List(totalSamples);
-    final random = Random(777);
-
-    double brown = 0.0;
-    double lpFilter = 0.0;
-
-    for (int i = 0; i < totalSamples; i++) {
-      final white = (random.nextDouble() * 2.0 - 1.0);
-
-      // 标准布朗运动随机漫步 (积分系数 0.988 消除直流漂移，输入驱动 0.082)
-      brown = (brown * 0.988) + (white * 0.082);
-
-      // 双极点柔化滤波 (过滤尖锐毛刺，仅保留 40~600Hz 最厚实安抚人心的频率)
-      lpFilter = lpFilter + 0.16 * (brown - lpFilter);
-
-      // 0.08Hz 极慢温润呼吸律动调制
-      final breathMod = 0.92 + 0.08 * sin(2.0 * pi * 0.08 * (i / sampleRate));
-
-      samples[i] = lpFilter * 1.8 * breathMod;
-    }
-
-    _applyCrossfade(samples, crossfadeSamples: (sampleRate * 0.4).toInt());
-    return _encodePcmWav(samples, sampleRate: sampleRate);
-  }
-
-  /// 1. 雨落窗台 (Rain on Window): 醇厚布朗噪音底噪 + 随机轻柔雨滴拍击
-  Uint8List _synthesizeRainWav({required int sampleRate, required double durationSec}) {
-    final totalSamples = (sampleRate * durationSec).toInt();
-    final samples = Float32List(totalSamples);
-    final random = Random(42);
-
-    double brown = 0.0;
-    double lpFilter = 0.0;
-
-    for (int i = 0; i < totalSamples; i++) {
-      final white = (random.nextDouble() * 2.0 - 1.0);
-
-      // 底噪升级为布朗噪音算法 (消除粉红噪音可能残留的轻微沙沙感)
-      brown = (brown * 0.985) + (white * 0.075);
-      lpFilter = lpFilter + 0.15 * (brown - lpFilter);
-      samples[i] = lpFilter * 1.25;
-    }
-
-    // 叠加随机雨滴敲击 (Droplet Patter)
-    int dropletIdx = 0;
-    while (dropletIdx < totalSamples - 1000) {
-      // 平均每 400~1200 个样本出现一次雨滴
-      dropletIdx += (400 + random.nextInt(800));
-      if (dropletIdx >= totalSamples - 1000) break;
-
-      final dropFreq = 1400.0 + random.nextDouble() * 800.0;
-      final dropAmp = 0.15 + random.nextDouble() * 0.25;
-      final dropLen = (sampleRate * 0.018).toInt(); // 约 18ms
-
-      for (int j = 0; j < dropLen && (dropletIdx + j) < totalSamples; j++) {
-        final t = j / sampleRate;
-        final decay = exp(-t * 180.0);
-        final val = sin(2.0 * pi * dropFreq * t) * decay * dropAmp;
-        samples[dropletIdx + j] += val;
+    _targetVolume = volume.clamp(0.0, 1.0);
+    if (_isPlaying) {
+      try {
+        await _player.setVolume(_targetVolume);
+      } catch (e) {
+        debugPrint('WhiteNoiseService setVolume error: $e');
       }
     }
-
-    // 循环无缝交叉淡化 (避免首尾循环播放时出现噼啪跳音)
-    _applyCrossfade(samples, crossfadeSamples: (sampleRate * 0.3).toInt());
-
-    return _encodePcmWav(samples, sampleRate: sampleRate);
   }
 
-  /// 2. 机械打字 / 机械时钟 (Mechanical Ticking & Typing)
-  Uint8List _synthesizeTypewriterWav({required int sampleRate, required double durationSec}) {
-    final totalSamples = (sampleRate * durationSec).toInt();
-    final samples = Float32List(totalSamples);
-    final random = Random(128);
-
-    // 极轻微的录音室环境空气底噪
-    double lpAir = 0.0;
-    for (int i = 0; i < totalSamples; i++) {
-      final white = (random.nextDouble() * 2.0 - 1.0) * 0.012;
-      lpAir = lpAir + 0.05 * (white - lpAir);
-      samples[i] = lpAir;
-    }
-
-    // 节奏规律的博朗机械表盘微秒针滴答与机械击键节奏
-    final intervalSamples = (sampleRate * 0.75).toInt(); // 每 0.75 秒一次击键/滴答
-    int tickPos = (sampleRate * 0.1).toInt();
-
-    while (tickPos < totalSamples - 1500) {
-      final isMajorTick = (tickPos ~/ intervalSamples) % 2 == 0;
-      final clickLen = (sampleRate * 0.045).toInt(); // 45ms 机械击键衰减
-      final resonanceFreq = isMajorTick ? 2400.0 : 1800.0;
-      final clickAmp = isMajorTick ? 0.65 : 0.45;
-
-      for (int j = 0; j < clickLen && (tickPos + j) < totalSamples; j++) {
-        final t = j / sampleRate;
-        final decay = exp(-t * 90.0);
-        // 瞬态高频冲击波 + 机械空腔共鸣
-        final impulse = (random.nextDouble() * 2.0 - 1.0) * exp(-t * 220.0) * 0.4;
-        final resonance = sin(2.0 * pi * resonanceFreq * t) * decay * clickAmp;
-        samples[tickPos + j] += (impulse + resonance);
-      }
-
-      tickPos += intervalSamples + (random.nextInt(200) - 100);
-    }
-
-    _applyCrossfade(samples, crossfadeSamples: (sampleRate * 0.25).toInt());
-    return _encodePcmWav(samples, sampleRate: sampleRate);
-  }
-
-  /// 3. 夜色篝火 (Cozy Campfire): 暖色低频风浪 + 随机树枝爆裂脆响
-  Uint8List _synthesizeCampfireWav({required int sampleRate, required double durationSec}) {
-    final totalSamples = (sampleRate * durationSec).toInt();
-    final samples = Float32List(totalSamples);
-    final random = Random(256);
-
-    // 极暖的低频热气流风吟 (Low-frequency Brownian rumble)
-    double brown = 0.0;
-    double lpRumble = 0.0;
-    for (int i = 0; i < totalSamples; i++) {
-      final white = (random.nextDouble() * 2.0 - 1.0);
-      brown = (brown + 0.02 * white) / 1.02;
-      lpRumble = lpRumble + 0.1 * (brown - lpRumble);
-      samples[i] = lpRumble * 0.45;
-    }
-
-    // 随机噼啪爆裂声 (Wood Crackles & Sharp Sparks)
-    int cracklePos = 0;
-    while (cracklePos < totalSamples - 2000) {
-      // 随机间隔 100ms ~ 350ms
-      cracklePos += (sampleRate * (0.1 + random.nextDouble() * 0.25)).toInt();
-      if (cracklePos >= totalSamples - 2000) break;
-
-      // 产生 1~3 声连续脆爆
-      final numBursts = 1 + random.nextInt(3);
-      for (int b = 0; b < numBursts; b++) {
-        final burstOffset = cracklePos + (b * (200 + random.nextInt(300)));
-        if (burstOffset >= totalSamples - 500) break;
-
-        final burstAmp = 0.35 + random.nextDouble() * 0.45;
-        final burstFreq = 2200.0 + random.nextDouble() * 2800.0;
-        final burstLen = (sampleRate * 0.02).toInt();
-
-        for (int j = 0; j < burstLen && (burstOffset + j) < totalSamples; j++) {
-          final t = j / sampleRate;
-          final decay = exp(-t * 240.0);
-          final snap = (random.nextDouble() * 2.0 - 1.0) * exp(-t * 400.0) * 0.5;
-          final spark = sin(2.0 * pi * burstFreq * t) * decay * burstAmp;
-          samples[burstOffset + j] += (snap + spark);
-        }
-      }
-    }
-
-    _applyCrossfade(samples, crossfadeSamples: (sampleRate * 0.3).toInt());
-    return _encodePcmWav(samples, sampleRate: sampleRate);
-  }
-
-  /// 边界平滑交叉淡化 (防止首尾循环时因振幅不连续产生喀嗒跳音)
-  void _applyCrossfade(Float32List samples, {required int crossfadeSamples}) {
-    final len = samples.length;
-    if (crossfadeSamples <= 0 || crossfadeSamples >= len ~/ 2) return;
-
-    for (int i = 0; i < crossfadeSamples; i++) {
-      final ratio = i / crossfadeSamples; // 0.0 -> 1.0
-      // 头部样本淡入，尾部样本淡出并加权混合
-      final tailVal = samples[len - crossfadeSamples + i];
-      final headVal = samples[i];
-      samples[i] = (1.0 - ratio) * tailVal + ratio * headVal;
-      samples[len - crossfadeSamples + i] = samples[i];
-    }
-  }
-
-  /// 将标准浮点音频采样序列编码为标准 16-Bit Mono RIFF WAV 字节流
-  Uint8List _encodePcmWav(Float32List samples, {required int sampleRate}) {
-    final numChannels = 1;
-    final bitsPerSample = 16;
-    final bytesPerSample = bitsPerSample ~/ 8;
-    final dataSize = samples.length * bytesPerSample;
-    final fileSize = 36 + dataSize;
-
-    final byteData = ByteData(44 + dataSize);
-
-    // 1. RIFF 标识头
-    byteData.setUint8(0, 0x52); // 'R'
-    byteData.setUint8(1, 0x49); // 'I'
-    byteData.setUint8(2, 0x46); // 'F'
-    byteData.setUint8(3, 0x46); // 'F'
-    byteData.setUint32(4, fileSize, Endian.little);
-    byteData.setUint8(8, 0x57);  // 'W'
-    byteData.setUint8(9, 0x41);  // 'A'
-    byteData.setUint8(10, 0x56); // 'V'
-    byteData.setUint8(11, 0x45); // 'E'
-
-    // 2. fmt 子块
-    byteData.setUint8(12, 0x66); // 'f'
-    byteData.setUint8(13, 0x6D); // 'm'
-    byteData.setUint8(14, 0x74); // 't'
-    byteData.setUint8(15, 0x20); // ' '
-    byteData.setUint32(16, 16, Endian.little); // 子块大小 (PCM 为 16)
-    byteData.setUint16(20, 1, Endian.little);  // 格式 (1 = PCM)
-    byteData.setUint16(22, numChannels, Endian.little);
-    byteData.setUint32(24, sampleRate, Endian.little);
-    byteData.setUint32(28, sampleRate * numChannels * bytesPerSample, Endian.little); // ByteRate
-    byteData.setUint16(32, numChannels * bytesPerSample, Endian.little); // BlockAlign
-    byteData.setUint16(34, bitsPerSample, Endian.little);
-
-    // 3. data 子块
-    byteData.setUint8(36, 0x64); // 'd'
-    byteData.setUint8(37, 0x61); // 'a'
-    byteData.setUint8(38, 0x74); // 't'
-    byteData.setUint8(39, 0x61); // 'a'
-    byteData.setUint32(40, dataSize, Endian.little);
-
-    // 4. 写入 16-Bit PCM 采样数据 (带峰值限幅保护)
-    int offset = 44;
-    for (int i = 0; i < samples.length; i++) {
-      final clamped = samples[i].clamp(-1.0, 1.0);
-      final intSample = (clamped * 32767.0).toInt();
-      byteData.setInt16(offset, intSample, Endian.little);
-      offset += 2;
-    }
-
-    return byteData.buffer.asUint8List();
+  /// 释放资源
+  void dispose() {
+    _player.dispose();
   }
 }

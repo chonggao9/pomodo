@@ -6,6 +6,7 @@ import 'core/services/white_noise_service.dart';
 import 'providers/task_provider.dart';
 import 'providers/pomodoro_provider.dart';
 import 'providers/profile_provider.dart';
+import 'providers/locale_provider.dart';
 import 'views/home_page.dart';
 
 void main() async {
@@ -43,17 +44,31 @@ class PomoDoApp extends StatelessWidget {
           create: (_) => TaskProvider()..loadTasks(),
         ),
         ChangeNotifierProvider(
-          create: (_) => PomodoroProvider(),
+          create: (_) => PomodoroProvider()..initPreferences(),
         ),
         ChangeNotifierProvider(
           create: (_) => ProfileProvider()..initProfile(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => LocaleProvider()..initLocale(),
+        ),
       ],
-      child: MaterialApp(
-        title: 'PomoDo',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const HomePage(),
+      child: Consumer2<ProfileProvider, LocaleProvider>(
+        builder: (context, profileProv, localeProv, _) {
+          return MaterialApp(
+            title: 'PomoDo',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: profileProv.themeMode,
+            locale: localeProv.currentLocale,
+            supportedLocales: const [
+              Locale('zh', 'CN'),
+              Locale('en', 'US'),
+            ],
+            home: const HomePage(),
+          );
+        },
       ),
     );
   }

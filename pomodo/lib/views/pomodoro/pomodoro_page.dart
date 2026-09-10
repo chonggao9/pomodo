@@ -353,14 +353,13 @@ class PomodoroPage extends StatelessWidget {
     );
   }
 
-  /// 离线白噪音声学微仓 (pomo-ambient-dock)
+  /// 自然采样声景微仓 (pomo-ambient-dock)
   Widget _buildAmbientDock(PomodoroProvider pomo) {
     const ambientOptions = [
-      {'name': '布朗噪音', 'icon': '🌊', 'key': '布朗噪音'},
-      {'name': '雨落窗台', 'icon': '🌧️', 'key': '雨落窗台'},
-      {'name': '机械打字', 'icon': '☕', 'key': '机械打字'},
-      {'name': '夜色篝火', 'icon': '🌲', 'key': '夜色篝火'},
-      {'name': '静音模式', 'icon': '🔇', 'key': '静音模式'},
+      {'name': '窗台夜雨', 'icon': '🌧️', 'key': '🌧️ 窗台夜雨'},
+      {'name': '深海潮汐', 'icon': '🌊', 'key': '🌊 深海潮汐'},
+      {'name': '夜色篝火', 'icon': '🌲', 'key': '🌲 夜色篝火'},
+      {'name': '静音模式', 'icon': '🔇', 'key': '🔇 静音模式'},
     ];
 
     return Container(
@@ -388,7 +387,7 @@ class PomodoroPage extends StatelessWidget {
                   Icon(Icons.graphic_eq_rounded, size: 16, color: AppTheme.marsGreen),
                   SizedBox(width: 6),
                   Text(
-                    '布朗声学微仓 (1/f² 心流)',
+                    '大自然有机声景 (零接缝循环)',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -397,7 +396,7 @@ class PomodoroPage extends StatelessWidget {
                   ),
                 ],
               ),
-              if (pomo.selectedSound != '静音模式')
+              if (!pomo.selectedSound.contains('静音'))
                 GestureDetector(
                   onTap: () => pomo.toggleSoundPreview(),
                   child: Container(

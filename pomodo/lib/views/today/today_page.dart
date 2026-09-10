@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../models/task.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/pomodoro_provider.dart';
+import '../../providers/profile_provider.dart';
 import 'task_detail_sheet.dart';
 
 /// 100% 像素级对齐设计稿的「今日待办」页面
@@ -68,9 +69,19 @@ class _TodayPageState extends State<TodayPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
-        child: Consumer<TaskProvider>(
-          builder: (context, taskProv, child) {
-            final tasks = taskProv.tasksForDate(_selectedDate);
+        child: Consumer2<TaskProvider, ProfileProvider>(
+          builder: (context, taskProv, profileProv, child) {
+            final rawTasks = taskProv.tasksForDate(_selectedDate);
+            final List<Task> tasks;
+            if (profileProv.completionBehavior == 'move_to_bottom') {
+              final pending = rawTasks.where((t) => !t.isCompleted).toList();
+              final done = rawTasks.where((t) => t.isCompleted).toList();
+              tasks = [...pending, ...done];
+            } else if (profileProv.completionBehavior == 'hide') {
+              tasks = rawTasks.where((t) => !t.isCompleted).toList();
+            } else {
+              tasks = rawTasks;
+            }
 
             return Stack(
               children: [

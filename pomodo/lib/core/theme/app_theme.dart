@@ -51,12 +51,22 @@ class AppTheme {
     }
   }
 
+  // 暗黑黑曜风格 (#0F171A, #182328, #273840)
+  static const Color darkBgPage = Color(0xFF0F171A);
+  static const Color darkBgSurface = Color(0xFF182328);
+  static const Color darkBorder = Color(0xFF273840);
+  static const Color darkTextMain = Color(0xFFF1F5F9);
+  static const Color darkTextSecondary = Color(0xFF94A3B8);
+  static const Color darkTextMuted = Color(0xFF64748B);
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.light,
       scaffoldBackgroundColor: bgPage,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primary,
+        brightness: Brightness.light,
         primary: primary,
         surface: bgSurface,
       ),
@@ -64,6 +74,27 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: bgSurface,
         foregroundColor: textMain,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: darkBgPage,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primary,
+        brightness: Brightness.dark,
+        primary: primary,
+        surface: darkBgSurface,
+      ),
+      fontFamily: null,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: darkBgSurface,
+        foregroundColor: darkTextMain,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),

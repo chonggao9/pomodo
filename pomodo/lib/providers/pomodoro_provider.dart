@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/database/database_helper.dart';
 import '../core/services/white_noise_service.dart';
 import '../models/pomodoro_session.dart';
@@ -10,6 +11,7 @@ class PomodoroProvider with ChangeNotifier {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   int _targetMinutes = 25;
+  int _breakMinutes = 5;
   int _remainingSeconds = 25 * 60;
   Timer? _timer;
   PomodoroState _state = PomodoroState.idle;
@@ -17,13 +19,15 @@ class PomodoroProvider with ChangeNotifier {
   String? _selectedTaskId;
   String? _selectedTaskTitle;
   DateTime? _sessionStartTime;
-  String _selectedSound = '布朗噪音'; // 默认开启纯正深邃的布朗噪音 (Brown Noise 1/f²)
+  String _selectedSound = '🌧️ 窗台夜雨'; // 默认开启真实自然窗台夜雨
   bool _isPreviewPlaying = false;
 
-  final List<int> _presetMinutes = [15, 25, 35, 45];
-  final List<String> _soundPresets = ['布朗噪音', '雨落窗台', '机械打字', '夜色篝火', '静音模式'];
+  final List<int> _presetMinutes = [15, 25, 35, 45, 60];
+  final List<int> _presetBreakMinutes = [5, 10, 15];
+  final List<String> _soundPresets = ['🌧️ 窗台夜雨', '🌊 深海潮汐', '🌲 夜色篝火', '🔇 静音模式'];
 
   int get targetMinutes => _targetMinutes;
+  int get breakMinutes => _breakMinutes;
   int get remainingSeconds => _remainingSeconds;
   PomodoroState get state => _state;
   bool get isRunning => _state == PomodoroState.running;
@@ -33,6 +37,7 @@ class PomodoroProvider with ChangeNotifier {
   String get selectedSound => _selectedSound;
   bool get isPreviewPlaying => _isPreviewPlaying;
   List<int> get presetMinutes => _presetMinutes;
+  List<int> get presetBreakMinutes => _presetBreakMinutes;
   List<String> get soundPresets => _soundPresets;
 
   double get progress {
@@ -49,16 +54,35 @@ class PomodoroProvider with ChangeNotifier {
     return '$minStr:$secStr';
   }
 
+  Future<void> initPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    _targetMinutes = prefs.getInt('pomodoro_target_minutes') ?? 25;
+    _breakMinutes = prefs.getInt('pomodoro_break_minutes') ?? 5;
+    _selectedSound = prefs.getString('pomodoro_sound') ?? '🌧️ 窗台夜雨';
+    if (_state == PomodoroState.idle) {
+      _remainingSeconds = _targetMinutes * 60;
+    }
+    notifyListeners();
+  }
+
   void setTargetMinutes(int minutes) {
     if (_state == PomodoroState.running) return;
     _targetMinutes = minutes;
     _remainingSeconds = minutes * 60;
     _state = PomodoroState.idle;
+    SharedPreferences.getInstance().then((prefs) => prefs.setInt('pomodoro_target_minutes', minutes));
+    notifyListeners();
+  }
+
+  void setBreakMinutes(int minutes) {
+    _breakMinutes = minutes;
+    SharedPreferences.getInstance().then((prefs) => prefs.setInt('pomodoro_break_minutes', minutes));
     notifyListeners();
   }
 
   void setSelectedSound(String sound) {
     _selectedSound = sound;
+    SharedPreferences.getInstance().then((prefs) => prefs.setString('pomodoro_sound', sound));
     if (_state == PomodoroState.running) {
       _playCurrentSound();
     } else if (_isPreviewPlaying) {
