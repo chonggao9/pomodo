@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - PomoDo</title>
+  <style>
+    :root {
+      --primary: #008779;
+      --bg: #0F171A;
+      --card-bg: #1A2428;
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #F8FAFC;
+        --card-bg: #FFFFFF;
+        --text: #0F172A;
+        --text-muted: #64748B;
+        --border: rgba(0, 0, 0, 0.08);
+      }
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      border: 1px solid var(--border);
+    }
+    h1 {
+      color: var(--primary);
+      font-size: 28px;
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    h2 {
+      font-size: 20px;
+      margin-top: 32px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+    h3 {
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    p, li {
+      color: var(--text);
+      font-size: 15px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(0, 135, 121, 0.15);
+      color: var(--primary);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .highlight-box {
+      background: rgba(0, 135, 121, 0.08);
+      border-left: 4px solid var(--primary);
+      padding: 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    code {
+      background: rgba(0,0,0,0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">PomoDo · Official Legal Policy</div>
+    <h1>PomoDo Privacy Policy</h1>
+    <p><strong>Last Updated: September 11, 2026</strong> | <strong>Effective Date: September 11, 2026</strong></p>
+
+    <div class="highlight-box">
+      <strong>Core Privacy Commitment:</strong> PomoDo is built with a <strong>Local-First, Privacy-by-Default</strong> principle. We do <strong>NOT</strong> collect, upload, track, monetize, or share your personal data, tasks, notes, or focus history. All your data stays strictly inside your device's private SQLite database.
+    </div>
+
+    <h2>1. Information Collection & Storage</h2>
+    <p>PomoDo does not require an account, email address, or phone number to use. We do not maintain any cloud servers to store your personal productivity records.</p>
+    <ul>
+      <li><strong>To-Do Tasks & Notes:</strong> Stored strictly in local SQLite database on your device.</li>
+      <li><strong>Pomodoro Sessions:</strong> Focus records and timestamps are stored locally.</li>
+      <li><strong>Audio & White Noise:</strong> Ambient sounds are bundled offline within the application package; no internet streaming or telemetry is performed.</li>
+    </ul>
+
+    <h2>2. Third-Party Sharing & Analytics</h2>
+    <p>PomoDo does <strong>not</strong> include any third-party tracking, profiling, or advertising SDKs (no Google AdMob, no Facebook SDK, no Firebase Analytics). Because no data is collected, no data is ever shared with or sold to third parties.</p>
+
+    <h2>3. Device Permissions</h2>
+    <p>The app requests only standard system permissions strictly necessary for timer execution:</p>
+    <ul>
+      <li><code>android.permission.VIBRATE</code>: Provides gentle haptic feedback on timer completion.</li>
+      <li><code>android.permission.WAKE_LOCK</code>: Keeps screen awake during focus countdown if opted in.</li>
+      <li><code>android.permission.POST_NOTIFICATIONS</code>: Delivers countdown alerts when running in background.</li>
+    </ul>
+
+    <h2>4. Data Retention & Your Rights</h2>
+    <p>You have full autonomy over your records:</p>
+    <ul>
+      <li><strong>Export:</strong> Export your full physical SQLite <code>.db</code> file via <em>Settings -> Database Center</em>.</li>
+      <li><strong>Deletion:</strong> Delete individual tasks or reset the entire database directly in-app.</li>
+      <li><strong>Uninstall:</strong> Removing the app permanently erases all locally cached records and database files from your device.</li>
+    </ul>
+
+    <h2>5. Contact Information</h2>
+    <p>If you have any questions regarding this Privacy Policy, please open an inquiry on our public repository:</p>
+    <p><a href="https://github.com/chonggao9/pomodo/issues" style="color: var(--primary);">https://github.com/chonggao9/pomodo/issues</a></p>
+
+    <footer>
+      © 2026 PomoDo Team. Built for focus, designed for privacy.
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Google Play Release Keystore Configuration Template
+# Copy this file to 'key.properties' in the same directory and fill in your actual credentials.
+# NEVER commit 'key.properties' or your *.jks file to public git repositories!
+
+storePassword=YourKeystorePasswordHere
+keyPassword=YourKeyPasswordHere
+keyAlias=pomodo_key
+storeFile=../upload-keystore.jks
