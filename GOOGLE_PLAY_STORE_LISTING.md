@@ -143,6 +143,7 @@ PomoDo 是一款专注高效、以隐私为先的极简时间管理利器。我�
 
 ## 二、 应用分类与标签 (Category & Tags)
 
+* **Package Name (包名 / Application ID)**：`com.chonggao.pomodo`
 * **应用类别 (Application Type)**：应用 (App)
 * **默认类别 (Category)**：效率 (Productivity)
 * **标签 (Tags)**（在 Console 中最多选择 5 个）：

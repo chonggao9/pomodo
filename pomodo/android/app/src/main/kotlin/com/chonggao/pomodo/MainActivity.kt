@@ -1,4 +1,4 @@
-package com.pomodo.app.pomodo
+package com.chonggao.pomodo
 
 import android.media.MediaPlayer
 import io.flutter.embedding.android.FlutterActivity

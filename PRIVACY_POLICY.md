@@ -56,7 +56,7 @@ PomoDo **does not request** access to contacts, photos, microphone, camera, loca
 
 ## 5. Data Storage, Security, and Backup
 
-- **Local Storage Security**: Your database is stored within the Android sandboxed internal storage (`/data/data/com.pomodo.app.pomodo/`), protected by the operating system's sandbox isolation mechanism.
+- **Local Storage Security**: Your database is stored within the Android sandboxed internal storage (`/data/data/com.chonggao.pomodo/`), protected by the operating system's sandbox isolation mechanism.
 - **Data Portability & Export**: You have full control over your data. In **Settings -> Database Management**, you can export your complete SQLite database file at any time to your own local storage or cloud drive of your choice.
 
 ---
