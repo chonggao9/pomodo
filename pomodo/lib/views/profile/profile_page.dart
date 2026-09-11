@@ -148,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Navigator.pop(ctx);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.marsGreen,
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -169,6 +169,7 @@ class _ProfilePageState extends State<ProfilePage> {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -176,11 +177,11 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppTheme.marsGreen.withOpacity(0.12)
+                ? primaryColor.withOpacity(0.12)
                 : (isDark ? AppTheme.darkBgPage : const Color(0xFFF8FAFC)),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? AppTheme.marsGreen : (isDark ? AppTheme.darkBorder : AppTheme.borderLight),
+              color: isSelected ? primaryColor : (isDark ? AppTheme.darkBorder : AppTheme.borderLight),
               width: isSelected ? 1.5 : 1,
             ),
           ),
@@ -190,7 +191,7 @@ class _ProfilePageState extends State<ProfilePage> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? AppTheme.marsGreen : (isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B)),
+              color: isSelected ? primaryColor : (isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B)),
             ),
           ),
         ),
@@ -238,7 +239,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.folder_special_rounded, color: AppTheme.marsGreen, size: 22),
+                        Icon(Icons.folder_special_rounded, color: Theme.of(context).primaryColor, size: 22),
                         const SizedBox(width: 8),
                         Text(
                           strings.listCategories,
@@ -255,7 +256,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: const Icon(Icons.add, size: 16),
                       label: Text(strings.isZh ? '新建分类' : 'New', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.marsGreen,
+                        backgroundColor: Theme.of(context).primaryColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -447,7 +448,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 await prov.updateCategory(cat.copyWith(name: name, color: selectedColor));
                 nav.pop();
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.marsGreen, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(dialogCtx).primaryColor, foregroundColor: Colors.white),
               child: Text(strings.save),
             ),
           ],
@@ -520,7 +521,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 await prov.addCategory(name: name, color: selectedColor);
                 nav.pop();
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.marsGreen, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(dialogCtx).primaryColor, foregroundColor: Colors.white),
               child: Text(strings.confirm),
             ),
           ],
@@ -561,7 +562,7 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 16),
             Row(
               children: [
-                const Icon(Icons.storage_rounded, color: AppTheme.marsGreen, size: 22),
+                Icon(Icons.storage_rounded, color: Theme.of(context).primaryColor, size: 22),
                 const SizedBox(width: 8),
                 Text(
                   strings.dbCenter,
@@ -625,7 +626,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: const Icon(Icons.download_rounded, size: 18),
                     label: Text(strings.isZh ? '导出 .db 备份' : 'Export .db'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.marsGreen,
+                      backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -783,23 +784,24 @@ class _ProfilePageState extends State<ProfilePage> {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.marsGreen.withOpacity(0.09)
+              ? primaryColor.withOpacity(0.09)
               : (isDark ? AppTheme.darkBgPage : const Color(0xFFF8FAFC)),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? AppTheme.marsGreen : (isDark ? AppTheme.darkBorder : AppTheme.borderLight),
+            color: isSelected ? primaryColor : (isDark ? AppTheme.darkBorder : AppTheme.borderLight),
             width: isSelected ? 1.8 : 1,
           ),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 22, color: isSelected ? AppTheme.marsGreen : (isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B))),
+            Icon(icon, size: 22, color: isSelected ? primaryColor : (isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B))),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -810,7 +812,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: isSelected ? AppTheme.marsGreen : (isDark ? AppTheme.darkTextMain : AppTheme.textPrimary),
+                      color: isSelected ? primaryColor : (isDark ? AppTheme.darkTextMain : AppTheme.textPrimary),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -825,7 +827,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded, color: AppTheme.marsGreen, size: 20)
+              Icon(Icons.check_circle_rounded, color: primaryColor, size: 20)
             else
               Icon(Icons.radio_button_unchecked_rounded, color: isDark ? AppTheme.darkBorder : const Color(0xFFCBD5E1), size: 20),
           ],
@@ -834,16 +836,20 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // ================= 5. 主题色与风格切换抽屉 =================
+  // ================= 5. 主题色与风格切换抽屉 (做实方案 A 五套色彩体系) =================
   void _showThemeAndIconSheet(BuildContext context, ProfileProvider profile) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final strings = AppStrings.of(context);
+    final isZh = strings.isZh;
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setSheetState) {
+          final curKey = profile.themeColorKey;
+
           return Container(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
             decoration: BoxDecoration(
@@ -875,112 +881,102 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  strings.isZh ? '正统官方马尔斯绿 · 双模专属应用图标' : 'Marrs Green & Dual App Icon Styles',
-                  style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted),
+                  isZh
+                      ? '正统设计系统 · 五套精心调校的包豪斯强调色 (即选即生效)'
+                      : 'Curated 5 Bauhaus accent theme palettes (Active instantly)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted,
+                  ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          profile.setAppIconTheme('light');
-                          setSheetState(() {});
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: profile.appIconTheme == 'light'
-                                ? AppTheme.marsGreen.withOpacity(0.08)
-                                : (isDark ? AppTheme.darkBgPage : const Color(0xFFF8FAFC)),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: profile.appIconTheme == 'light' ? AppTheme.marsGreen : (isDark ? AppTheme.darkBorder : AppTheme.borderLight),
-                              width: profile.appIconTheme == 'light' ? 2 : 1,
+                // 5 套主题强调色列表
+                ...AppTheme.accentThemes.map((opt) {
+                  final isSelected = curKey == opt.key;
+                  final optColor = opt.color;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: GestureDetector(
+                      onTap: () {
+                        profile.setThemeColor(opt.key);
+                        setSheetState(() {});
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? optColor.withOpacity(isDark ? 0.18 : 0.08)
+                              : (isDark ? AppTheme.darkBgPage : const Color(0xFFF8FAFC)),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isSelected
+                                ? optColor
+                                : (isDark ? AppTheme.darkBorder : AppTheme.borderLight),
+                            width: isSelected ? 1.8 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: optColor,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: optColor.withOpacity(0.35),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: isSelected
+                                  ? const Icon(Icons.check, color: Colors.white, size: 18)
+                                  : null,
                             ),
-                          ),
-                          child: Column(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.asset(
-                                  'assets/icons/pomodo_icon_light_ceramic.jpg',
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isZh ? opt.nameZh : opt.nameEn,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: isSelected
+                                          ? (isDark ? Colors.white : optColor)
+                                          : (isDark ? AppTheme.darkTextMain : AppTheme.textPrimary),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    isZh ? opt.descZh : opt.descEn,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                strings.isZh ? '极简白瓷版' : 'Ceramic White',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? AppTheme.darkTextMain : AppTheme.textPrimary,
-                                ),
+                            ),
+                            if (isSelected)
+                              Icon(Icons.radio_button_checked, color: optColor, size: 20)
+                            else
+                              Icon(
+                                Icons.radio_button_unchecked,
+                                color: isDark ? AppTheme.darkBorder : const Color(0xFFCBD5E1),
+                                size: 20,
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                strings.isZh ? 'Things 3 纯白通透' : 'Clean & Airy',
-                                style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          profile.setAppIconTheme('dark');
-                          setSheetState(() {});
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: profile.appIconTheme == 'dark'
-                                ? AppTheme.marsGreen.withOpacity(0.08)
-                                : (isDark ? AppTheme.darkBgPage : const Color(0xFFF8FAFC)),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: profile.appIconTheme == 'dark' ? AppTheme.marsGreen : (isDark ? AppTheme.darkBorder : AppTheme.borderLight),
-                              width: profile.appIconTheme == 'dark' ? 2 : 1,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.asset(
-                                  'assets/icons/pomodo_icon_dark_marrs.jpg',
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                strings.isZh ? '深邃暗雅版' : 'Obsidian Dark',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? AppTheme.darkTextMain : AppTheme.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                strings.isZh ? 'Dieter Rams 沉浸绿' : 'Marrs & Charcoal',
-                                style: TextStyle(fontSize: 10, color: isDark ? AppTheme.darkTextMuted : AppTheme.textMuted),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                }),
               ],
             ),
           );
@@ -1161,7 +1157,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       Switch(
                         value: profile.autoRollover,
-                        activeColor: AppTheme.marsGreen,
+                        activeColor: Theme.of(context).primaryColor,
                         onChanged: (val) {
                           profile.setAutoRollover(val);
                           setSheetState(() {});
@@ -1424,17 +1420,18 @@ class _ProfilePageState extends State<ProfilePage> {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.marsGreen.withOpacity(0.12)
+              ? primaryColor.withOpacity(0.12)
               : (isDark ? AppTheme.darkBgPage : const Color(0xFFF8FAFC)),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppTheme.marsGreen : (isDark ? AppTheme.darkBorder : AppTheme.borderLight),
+            color: isSelected ? primaryColor : (isDark ? AppTheme.darkBorder : AppTheme.borderLight),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -1444,7 +1441,7 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? AppTheme.marsGreen : (isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B)),
+            color: isSelected ? primaryColor : (isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B)),
           ),
         ),
       ),
@@ -1465,7 +1462,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Icon(
               isUnlocked ? Icons.verified_rounded : Icons.lock_outline_rounded,
-              color: isUnlocked ? AppTheme.marsGreen : (isDark ? AppTheme.darkTextMuted : AppTheme.textMuted),
+              color: isUnlocked ? Theme.of(context).primaryColor : (isDark ? AppTheme.darkTextMuted : AppTheme.textMuted),
             ),
             const SizedBox(width: 8),
             Text(
@@ -1495,11 +1492,11 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: isUnlocked
-                    ? AppTheme.marsGreen.withOpacity(0.08)
+                    ? Theme.of(context).primaryColor.withOpacity(0.08)
                     : (isDark ? AppTheme.darkBgPage : const Color(0xFFF1F5F9)),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: isUnlocked ? AppTheme.marsGreen.withOpacity(0.3) : Colors.transparent,
+                  color: isUnlocked ? Theme.of(context).primaryColor.withOpacity(0.3) : Colors.transparent,
                 ),
               ),
               child: Text(
@@ -1507,7 +1504,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: isUnlocked ? AppTheme.marsGreen : (isDark ? AppTheme.darkTextMuted : const Color(0xFF64748B)),
+                  color: isUnlocked ? Theme.of(context).primaryColor : (isDark ? AppTheme.darkTextMuted : const Color(0xFF64748B)),
                 ),
               ),
             ),
@@ -1516,7 +1513,7 @@ class _ProfilePageState extends State<ProfilePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(strings.confirm, style: const TextStyle(color: AppTheme.marsGreen)),
+            child: Text(strings.confirm, style: TextStyle(color: Theme.of(context).primaryColor)),
           ),
         ],
       ),
@@ -1562,7 +1559,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Navigator.pop(ctx);
                 UpdateService.openUrl('https://github.com/${UpdateService.githubRepo}/releases');
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.marsGreen, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.white),
               child: Text(strings.isZh ? '前往 Releases 网页' : 'Open Releases'),
             ),
           ],
@@ -1579,7 +1576,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Icon(
               info.hasNewVersion ? Icons.system_update_rounded : Icons.check_circle_outline_rounded,
-              color: AppTheme.marsGreen,
+              color: Theme.of(context).primaryColor,
             ),
             const SizedBox(width: 8),
             Text(
@@ -1627,7 +1624,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Navigator.pop(ctx);
                 UpdateService.openUrl(info.apkDownloadUrl!);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.marsGreen, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.white),
               child: Text(strings.isZh ? '下载最新 APK' : 'Download APK'),
             )
           else
@@ -1636,7 +1633,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Navigator.pop(ctx);
                 UpdateService.openUrl(info.releaseUrl);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.marsGreen, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.white),
               child: Text(strings.isZh ? '查看 GitHub 发布' : 'View on GitHub'),
             ),
         ],
@@ -1738,15 +1735,21 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       Divider(height: 1, indent: 46, endIndent: 14, color: isDark ? AppTheme.darkBorder : AppTheme.borderLight),
 
-                      // 4.2 主题色与风格 (图标与色彩)
-                      _buildListRow(
-                        context: context,
-                        icon: Icons.palette_outlined,
-                        title: strings.themeAndStyle,
-                        meta: profile.appIconTheme == 'light'
-                            ? (strings.isZh ? '马尔斯绿 (白瓷)' : 'Marrs Green (Ceramic)')
-                            : (strings.isZh ? '深邃暗雅 (墨绿)' : 'Obsidian (Dark)'),
-                        onTap: () => _showThemeAndIconSheet(context, profile),
+                      // 4.2 主题色与风格 (真实五套强调色体系)
+                      Builder(
+                        builder: (ctx) {
+                          final activeTheme = AppTheme.accentThemes.firstWhere(
+                            (e) => e.key == profile.themeColorKey,
+                            orElse: () => AppTheme.accentThemes.first,
+                          );
+                          return _buildListRow(
+                            context: context,
+                            icon: Icons.palette_outlined,
+                            title: strings.themeAndStyle,
+                            meta: strings.isZh ? activeTheme.nameZh : activeTheme.nameEn,
+                            onTap: () => _showThemeAndIconSheet(context, profile),
+                          );
+                        },
                       ),
                       Divider(height: 1, indent: 46, endIndent: 14, color: isDark ? AppTheme.darkBorder : AppTheme.borderLight),
 
@@ -1950,7 +1953,7 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.military_tech_outlined, size: 18, color: AppTheme.marsGreen),
+                    Icon(Icons.military_tech_outlined, size: 18, color: Theme.of(context).primaryColor),
                     const SizedBox(width: 6),
                     Text(
                       strings.myBadges,
@@ -2098,7 +2101,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Icon(
               icon,
               size: 22,
-              color: isUnlocked ? AppTheme.marsGreen : (isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8)),
+              color: isUnlocked ? Theme.of(context).primaryColor : (isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8)),
             ),
           ),
           const SizedBox(height: 6),
@@ -2146,6 +2149,7 @@ class _ProfilePageState extends State<ProfilePage> {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -2153,7 +2157,7 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: AppTheme.marsGreen),
+            Icon(icon, size: 20, color: primaryColor),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

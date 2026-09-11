@@ -72,10 +72,13 @@ class Task {
     String? status,
     String? workload,
     String? dueDate,
+    bool clearDueDate = false,
     String? categoryId,
+    bool clearCategoryId = false,
     String? createdAt,
     String? updatedAt,
     String? completedAt,
+    bool clearCompletedAt = false,
   }) {
     return Task(
       id: id ?? this.id,
@@ -85,11 +88,11 @@ class Task {
       ivyOrder: ivyOrder ?? this.ivyOrder,
       status: status ?? this.status,
       workload: workload ?? this.workload,
-      dueDate: dueDate ?? this.dueDate,
-      categoryId: categoryId ?? this.categoryId,
+      dueDate: clearDueDate ? null : (dueDate ?? this.dueDate),
+      categoryId: clearCategoryId ? null : (categoryId ?? this.categoryId),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      completedAt: completedAt ?? this.completedAt,
+      completedAt: clearCompletedAt ? null : (completedAt ?? this.completedAt),
     );
   }
 }

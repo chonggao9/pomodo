@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/database/database_helper.dart';
+import '../core/theme/app_theme.dart';
 
 class ProfileProvider with ChangeNotifier {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
@@ -12,6 +13,7 @@ class ProfileProvider with ChangeNotifier {
   String _gender = 'male'; // 'male', 'female', 'secret'
   String _appIconTheme = 'light'; // 'light' or 'dark'
   ThemeMode _themeMode = ThemeMode.light; // ThemeMode.light, ThemeMode.dark, ThemeMode.system
+  String _themeColorKey = 'marsGreen'; // 方案 A 主题强调色: marsGreen, oceanBlue, lavender, amberOrange, obsidianBlack
 
   // 待办与清单偏好设置
   int _dailyTaskLimit = 5; // 3, 5, 6, 0 (不限)
@@ -41,6 +43,8 @@ class ProfileProvider with ChangeNotifier {
   String get gender => _gender;
   String get appIconTheme => _appIconTheme;
   ThemeMode get themeMode => _themeMode;
+  String get themeColorKey => _themeColorKey;
+  Color get primaryColor => AppTheme.getAccentOption(_themeColorKey).color;
 
   int get dailyTaskLimit => _dailyTaskLimit;
   String get completionBehavior => _completionBehavior;
@@ -67,6 +71,7 @@ class ProfileProvider with ChangeNotifier {
     _avatarTag = prefs.getString('avatar_tag') ?? 'sunset';
     _gender = prefs.getString('gender') ?? 'male';
     _appIconTheme = prefs.getString('app_icon_theme') ?? 'light';
+    _themeColorKey = prefs.getString('theme_color') ?? 'marsGreen';
 
     final savedTheme = prefs.getString('theme_mode');
     if (savedTheme == 'dark') {
@@ -91,6 +96,13 @@ class ProfileProvider with ChangeNotifier {
     if (mode == ThemeMode.dark) val = 'dark';
     if (mode == ThemeMode.system) val = 'system';
     await prefs.setString('theme_mode', val);
+    notifyListeners();
+  }
+
+  Future<void> setThemeColor(String colorKey) async {
+    _themeColorKey = colorKey;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('theme_color', colorKey);
     notifyListeners();
   }
 

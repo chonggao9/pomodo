@@ -59,8 +59,8 @@ class PomoDoApp extends StatelessWidget {
           return MaterialApp(
             title: 'PomoDo',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
+            theme: AppTheme.buildLightTheme(profileProv.primaryColor),
+            darkTheme: AppTheme.buildDarkTheme(profileProv.primaryColor),
             themeMode: profileProv.themeMode,
             locale: localeProv.currentLocale,
             localizationsDelegates: const [

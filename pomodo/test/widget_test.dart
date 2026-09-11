@@ -19,5 +19,28 @@ void main() {
     final enStrings = AppStrings(const Locale('en', 'US'));
     expect(enStrings.tabToday, 'Today');
     expect(enStrings.tabFocus, 'Focus');
+
+    // Test new interaction strings for todo overhaul
+    expect(zhStrings.swipeToComplete.isNotEmpty, true);
+    expect(zhStrings.swipeToDelete.isNotEmpty, true);
+    expect(zhStrings.undo, '撤销');
+    expect(zhStrings.bufferPoolTitle.isNotEmpty, true);
+    expect(zhStrings.categoryAll, '全部');
+
+    expect(enStrings.swipeToComplete.isNotEmpty, true);
+    expect(enStrings.swipeToDelete.isNotEmpty, true);
+    expect(enStrings.undo, 'Undo');
+    expect(enStrings.bufferPoolTitle.isNotEmpty, true);
+    expect(enStrings.categoryAll, 'All');
+  });
+
+  test('Five accent themes build correctly in AppTheme', () {
+    expect(AppTheme.accentThemes.length, 5);
+    for (final opt in AppTheme.accentThemes) {
+      final theme = AppTheme.buildLightTheme(opt.color);
+      expect(theme.primaryColor, opt.color);
+      expect(opt.descZh.isNotEmpty, true);
+      expect(opt.descEn.isNotEmpty, true);
+    }
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/i18n/app_strings.dart';
 import '../../models/task.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/pomodoro_provider.dart';
@@ -46,9 +47,9 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
   late TextEditingController _subtaskInputController;
 
   String? _categoryId;
-  String _workload = 'hard'; // 'easy' (一般), 'medium' (中等难度), 'hard' (较高难度)
+  String _workload = 'hard'; // 'easy', 'medium', 'hard'
   String? _dueDate;
-  String _dateChoice = '今天'; // '今天', '明天', '选择日期', '没有日期'
+  String _dateChoice = 'today'; // 'today', 'tomorrow', 'custom', 'none'
   String _priority = 'P1';
 
   List<Subtask> _subtasks = [];
@@ -78,7 +79,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
 
   void _initDateChoiceFromDueDate(String? dueDate) {
     if (dueDate == null) {
-      _dateChoice = '没有日期';
+      _dateChoice = 'none';
       return;
     }
     final now = DateTime.now();
@@ -89,11 +90,11 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
         '${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}';
 
     if (dueDate == todayStr) {
-      _dateChoice = '今天';
+      _dateChoice = 'today';
     } else if (dueDate == tomorrowStr) {
-      _dateChoice = '明天';
+      _dateChoice = 'tomorrow';
     } else {
-      _dateChoice = '选择日期';
+      _dateChoice = 'custom';
     }
   }
 
@@ -104,11 +105,11 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
         widget.initialDate.day == now.day;
 
     if (isToday) {
-      _dateChoice = '今天';
+      _dateChoice = 'today';
       _dueDate =
           '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     } else {
-      _dateChoice = '选择日期';
+      _dateChoice = 'custom';
       _dueDate =
           '${widget.initialDate.year}-${widget.initialDate.month.toString().padLeft(2, '0')}-${widget.initialDate.day.toString().padLeft(2, '0')}';
     }
@@ -167,25 +168,27 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
 
   void _onDatePillTap(String choice) async {
     final now = DateTime.now();
-    if (choice == '今天') {
+    if (choice == 'today') {
       setState(() {
-        _dateChoice = '今天';
+        _dateChoice = 'today';
         _dueDate =
             '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       });
-    } else if (choice == '明天') {
+    } else if (choice == 'tomorrow') {
       final tomorrow = now.add(const Duration(days: 1));
       setState(() {
-        _dateChoice = '明天';
+        _dateChoice = 'tomorrow';
         _dueDate =
             '${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}';
       });
-    } else if (choice == '没有日期') {
+    } else if (choice == 'none') {
       setState(() {
-        _dateChoice = '没有日期';
+        _dateChoice = 'none';
         _dueDate = null;
       });
-    } else if (choice == '选择日期') {
+    } else if (choice == 'custom') {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final primaryColor = Theme.of(context).primaryColor;
       final picked = await showDatePicker(
         context: context,
         initialDate: widget.initialDate,
@@ -194,11 +197,18 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
         builder: (context, child) {
           return Theme(
             data: Theme.of(context).copyWith(
-              colorScheme: const ColorScheme.light(
-                primary: AppTheme.marsGreen,
-                onPrimary: Colors.white,
-                onSurface: Color(0xFF0F172A),
-              ),
+              colorScheme: isDark
+                  ? ColorScheme.dark(
+                      primary: primaryColor,
+                      onPrimary: Colors.white,
+                      surface: AppTheme.darkBgSurface,
+                      onSurface: AppTheme.darkTextMain,
+                    )
+                  : ColorScheme.light(
+                      primary: primaryColor,
+                      onPrimary: Colors.white,
+                      onSurface: const Color(0xFF0F172A),
+                    ),
             ),
             child: child!,
           );
@@ -206,7 +216,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
       );
       if (picked != null) {
         setState(() {
-          _dateChoice = '选择日期';
+          _dateChoice = 'custom';
           _dueDate =
               '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
         });
@@ -222,39 +232,82 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
     }
 
     if (widget.task != null) {
-      await context.read<TaskProvider>().addSubtask(widget.task!.id, title);
-      await _loadSubtasks(widget.task!.id);
-    } else {
-      // 临时加入本地列表，待任务创建时统一写入
+      final sub = await context.read<TaskProvider>().addSubtask(widget.task!.id, title);
+      _subtaskInputController.clear();
       setState(() {
-        _subtasks.add(
-          Subtask(
-            id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-            taskId: '',
-            title: title,
-          ),
-        );
+        _subtasks.add(sub);
+        _isAddingSubtask = false;
+      });
+    } else {
+      _subtaskInputController.clear();
+      setState(() {
+        _subtasks.add(Subtask(
+          id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+          taskId: 'temp',
+          title: title,
+        ));
+        _isAddingSubtask = false;
       });
     }
-    _subtaskInputController.clear();
-    setState(() => _isAddingSubtask = false);
   }
 
   void _startPomodoroFocus() async {
     final saved = await _saveTask();
-    if (saved == null) return;
+    if (saved == null || !mounted) return;
 
-    if (!mounted) return;
-    // 载入当前任务并直接开始倒计时
     final pomoProv = context.read<PomodoroProvider>();
-    pomoProv.selectTask(saved.id, saved.title);
-    pomoProv.start();
+    if (pomoProv.isRunning &&
+        pomoProv.selectedTaskId != null &&
+        pomoProv.selectedTaskId != saved.id) {
+      final strings = AppStrings.of(context);
+      final currentTitle = pomoProv.selectedTaskTitle ?? strings.freeFocus;
+      final elapsedMins = (pomoProv.targetMinutes * 60 - pomoProv.remainingSeconds) ~/ 60;
 
-    Navigator.pop(context);
-    widget.onNavigateTab?.call(1); // 切换至专注 Tab
+      final action = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(strings.focusConflictTitle),
+          content: Text(strings.focusConflictDesc(currentTitle, elapsedMins)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'cancel'),
+              child: Text(strings.continueCurrentFocus),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'discard'),
+              child: Text(strings.discardAndSwitch, style: const TextStyle(color: Colors.red)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, 'settle'),
+              child: Text(strings.settleAndSwitch),
+            ),
+          ],
+        ),
+      );
+
+      if (action == 'cancel' || action == null) return;
+
+      await pomoProv.switchTaskAndRestart(
+        saved.id,
+        saved.title,
+        saveCurrent: action == 'settle',
+      );
+    } else {
+      pomoProv.selectTask(saved.id, saved.title);
+      pomoProv.start();
+    }
+
+    if (mounted) {
+      Navigator.pop(context);
+      widget.onNavigateTab?.call(1); // 切换至专注 Tab
+    }
   }
 
   void _showCategoryPicker(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final strings = AppStrings.of(context);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -273,9 +326,9 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                 left: 20,
                 right: 20,
               ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              decoration: BoxDecoration(
+                color: isDark ? AppTheme.darkBgSurface : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -286,7 +339,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                       width: 36,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFCBD5E1),
+                        color: isDark ? Colors.white24 : const Color(0xFFCBD5E1),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -295,12 +348,12 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '选择所属清单',
+                      Text(
+                        strings.selectListTitle,
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
+                          color: isDark ? AppTheme.darkTextMain : const Color(0xFF0F172A),
                         ),
                       ),
                       GestureDetector(
@@ -310,19 +363,19 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: AppTheme.marsGreen.withOpacity(0.1),
+                            color: primaryColor.withOpacity(isDark ? 0.2 : 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
-                              Icon(Icons.add, size: 14, color: AppTheme.marsGreen),
-                              SizedBox(width: 4),
+                              Icon(Icons.add, size: 14, color: primaryColor),
+                              const SizedBox(width: 4),
                               Text(
-                                '新建清单',
+                                strings.createListBtn,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: AppTheme.marsGreen,
+                                  color: primaryColor,
                                 ),
                               ),
                             ],
@@ -333,12 +386,12 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                   ),
                   const SizedBox(height: 14),
                   if (categories.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Center(
                         child: Text(
-                          '暂无清单分类，点击右上角新建',
-                          style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                          strings.noListsPrompt,
+                          style: TextStyle(fontSize: 13, color: isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8)),
                         ),
                       ),
                     )
@@ -351,7 +404,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                         shrinkWrap: true,
                         itemCount: categories.length,
                         separatorBuilder: (_, _) =>
-                            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                            Divider(height: 1, color: isDark ? AppTheme.darkBorder : const Color(0xFFF1F5F9)),
                         itemBuilder: (ctx, index) {
                           final cat = categories[index];
                           final isSelected = (_categoryId == cat.id) ||
@@ -376,18 +429,18 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                                 fontWeight:
                                     isSelected ? FontWeight.w700 : FontWeight.w500,
                                 color: isSelected
-                                    ? AppTheme.marsGreen
-                                    : const Color(0xFF0F172A),
+                                    ? primaryColor
+                                    : (isDark ? AppTheme.darkTextMain : const Color(0xFF0F172A)),
                               ),
                             ),
                             subtitle: Text(
-                              '$pendingCount 项待办',
-                              style: const TextStyle(
-                                  fontSize: 11, color: Color(0xFF94A3B8)),
+                              '$pendingCount ${strings.itemsUnit}',
+                              style: TextStyle(
+                                  fontSize: 11, color: isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8)),
                             ),
                             trailing: isSelected
-                                ? const Icon(Icons.check_rounded,
-                                    color: AppTheme.marsGreen, size: 20)
+                                ? Icon(Icons.check_rounded,
+                                    color: primaryColor, size: 20)
                                 : null,
                             onTap: () {
                               setState(() {
@@ -409,6 +462,9 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
   }
 
   void _showCreateCategoryDialog(BuildContext context, TaskProvider taskProv) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final strings = AppStrings.of(context);
     final nameController = TextEditingController();
     final colors = [
       '#008779', // 马尔斯绿
@@ -426,9 +482,14 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
+              backgroundColor: isDark ? AppTheme.darkBgSurface : Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: const Text('新建清单分类',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              title: Text(strings.createCategoryTitle,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? AppTheme.darkTextMain : const Color(0xFF0F172A),
+                  )),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,35 +497,36 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                   TextField(
                     controller: nameController,
                     autofocus: true,
+                    style: TextStyle(color: isDark ? AppTheme.darkTextMain : const Color(0xFF0F172A)),
                     decoration: InputDecoration(
-                      hintText: '如：阅读学习、备考、家居',
+                      hintText: strings.categoryNameHint,
                       hintStyle:
-                          const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                          TextStyle(fontSize: 13, color: isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8)),
                       filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
+                      fillColor: isDark ? AppTheme.darkBgPage : const Color(0xFFF8FAFC),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide:
-                            const BorderSide(color: AppTheme.marsGreen, width: 1.5),
+                            BorderSide(color: primaryColor, width: 1.5),
                       ),
                       contentPadding:
                           const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('选择标签颜色',
+                  Text(strings.isZh ? '选择标签颜色' : 'Select Color',
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF64748B))),
+                          color: isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B))),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -484,7 +546,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                             color: colorObj,
                             border: Border.all(
                               color: isCurrent
-                                  ? const Color(0xFF0F172A)
+                                  ? (isDark ? Colors.white : const Color(0xFF0F172A))
                                   : Colors.transparent,
                               width: 2.5,
                             ),
@@ -501,7 +563,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogCtx),
-                  child: const Text('取消', style: TextStyle(color: Color(0xFF64748B))),
+                  child: Text(strings.cancel, style: TextStyle(color: isDark ? AppTheme.darkTextMuted : const Color(0xFF64748B))),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -524,12 +586,12 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.marsGreen,
+                    backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text('创建并选择'),
+                  child: Text(strings.createAndSelectBtn),
                 ),
               ],
             );
@@ -541,6 +603,10 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final strings = AppStrings.of(context);
+
     return Container(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom + 20,
@@ -548,14 +614,14 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
         left: 20,
         right: 20,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkBgSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: isDark ? Colors.black.withOpacity(0.4) : Colors.black12,
             blurRadius: 20,
-            offset: Offset(0, -4),
+            offset: const Offset(0, -4),
           ),
         ],
       ),
@@ -569,7 +635,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
               width: 38,
               height: 4.5,
               decoration: BoxDecoration(
-                color: const Color(0xFFCBD5E1),
+                color: isDark ? Colors.white24 : const Color(0xFFCBD5E1),
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
@@ -587,8 +653,8 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                 final currentCatName = currentCat?.name ??
                     (_categoryId == null && taskProv.categories.isNotEmpty
                         ? taskProv.categories.first.name
-                        : '工作与工程');
-                final currentCatColor = currentCat?.uiColor ?? AppTheme.marsGreen;
+                        : strings.defaultCategoryName);
+                final currentCatColor = currentCat?.uiColor ?? primaryColor;
 
                 return InkWell(
                   onTap: () => _showCategoryPicker(context),
@@ -608,14 +674,14 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                         const SizedBox(width: 6),
                         Text(
                           currentCatName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF0F172A),
+                            color: isDark ? AppTheme.darkTextMain : const Color(0xFF0F172A),
                           ),
                         ),
-                        const Icon(Icons.arrow_drop_down,
-                            size: 16, color: Color(0xFF64748B)),
+                        Icon(Icons.arrow_drop_down,
+                            size: 16, color: isDark ? AppTheme.darkTextMuted : const Color(0xFF64748B)),
                       ],
                     ),
                   ),
@@ -631,19 +697,19 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                       await _saveTask();
                       nav.pop();
                     },
-                    child: const Text(
-                      '保存到本地',
+                    child: Text(
+                      strings.saveToLocalBtn,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.marsGreen,
+                        color: primaryColor,
                       ),
                     ),
                   ),
                   const SizedBox(width: 14),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.close, size: 20, color: Color(0xFF94A3B8)),
+                    child: Icon(Icons.close, size: 20, color: isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8)),
                   ),
                 ],
               ),
@@ -654,18 +720,18 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
           // 任务标题输入框 (大字粗体)
           TextField(
             controller: _titleController,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF0F172A),
+              color: isDark ? AppTheme.darkTextMain : const Color(0xFF0F172A),
               letterSpacing: -0.4,
             ),
-            decoration: const InputDecoration(
-              hintText: '想在今天专注完成什么？',
+            decoration: InputDecoration(
+              hintText: widget.task == null ? strings.titlePlaceholder : strings.sheetEditTitle,
               hintStyle: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF94A3B8),
+                color: isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8),
               ),
               border: InputBorder.none,
               isDense: true,
@@ -678,16 +744,16 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
           TextField(
             controller: _notesController,
             maxLines: 2,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: Color(0xFF475569),
+              color: isDark ? AppTheme.darkTextSecondary : const Color(0xFF475569),
               height: 1.4,
             ),
-            decoration: const InputDecoration(
-              hintText: '添加描述或注意事项 (纯本地存储)...',
+            decoration: InputDecoration(
+              hintText: strings.notesPlaceholder,
               hintStyle: TextStyle(
                 fontSize: 13,
-                color: Color(0xFF94A3B8),
+                color: isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8),
               ),
               border: InputBorder.none,
               isDense: true,
@@ -697,39 +763,39 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
           const SizedBox(height: 12),
 
           // 快捷日期胶囊组: 今天 | 明天 | 选择日期 ∨ | 没有日期
-          _buildDatePillsRow(),
+          _buildDatePillsRow(isDark, primaryColor, strings),
           const SizedBox(height: 14),
 
           // 子任务清单模块
-          _buildSubtasksSection(),
+          _buildSubtasksSection(isDark, primaryColor, strings),
           const SizedBox(height: 14),
 
           // 艾利工作量评估 (一般 / 中等难度 / 较高难度)
-          _buildWorkloadSection(),
+          _buildWorkloadSection(isDark, primaryColor, strings),
           const SizedBox(height: 16),
 
           // 沉浸专注大按钮
-          _buildStartFocusButton(),
+          _buildStartFocusButton(isDark, primaryColor, strings),
           const SizedBox(height: 14),
 
           // 底部工具栏 (提醒时间 / 重复 / 更多)
-          _buildBottomTools(),
+          _buildBottomTools(isDark, primaryColor, strings),
         ],
       ),
     );
   }
 
-  Widget _buildDatePillsRow() {
+  Widget _buildDatePillsRow(bool isDark, Color primaryColor, AppStrings strings) {
     final pills = [
-      {'label': '今天', 'key': '今天'},
-      {'label': '明天', 'key': '明天'},
+      {'label': strings.choiceToday, 'key': 'today'},
+      {'label': strings.choiceTomorrow, 'key': 'tomorrow'},
       {
-        'label': _dateChoice == '选择日期' && _dueDate != null
+        'label': _dateChoice == 'custom' && _dueDate != null
             ? '${_dueDate!.substring(5)} ∨'
-            : '选择日期 ∨',
-        'key': '选择日期'
+            : '${strings.choicePickDate} ∨',
+        'key': 'custom'
       },
-      {'label': '没有日期', 'key': '没有日期'},
+      {'label': strings.choiceNoDate, 'key': 'none'},
     ];
 
     return Wrap(
@@ -743,7 +809,9 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
             duration: const Duration(milliseconds: 150),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
-              color: isSelected ? AppTheme.marsGreen : const Color(0xFFF1F4F6),
+              color: isSelected
+                  ? primaryColor
+                  : (isDark ? AppTheme.darkBgPage : const Color(0xFFF1F4F6)),
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
@@ -751,7 +819,9 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? Colors.white : const Color(0xFF475569),
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? AppTheme.darkTextSecondary : const Color(0xFF475569)),
               ),
             ),
           ),
@@ -760,7 +830,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
     );
   }
 
-  Widget _buildSubtasksSection() {
+  Widget _buildSubtasksSection(bool isDark, Color primaryColor, AppStrings strings) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -797,8 +867,8 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                                 : Icons.check_circle_outline,
                             size: 15,
                             color: sub.isCompleted
-                                ? AppTheme.marsGreen
-                                : const Color(0xFFCBD5E1),
+                                ? primaryColor
+                                : (isDark ? AppTheme.darkBorder : const Color(0xFFCBD5E1)),
                           ),
                           const SizedBox(width: 6),
                           Expanded(
@@ -807,8 +877,8 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                               style: TextStyle(
                                 fontSize: 12,
                                 color: sub.isCompleted
-                                    ? const Color(0xFF94A3B8)
-                                    : const Color(0xFF334155),
+                                    ? (isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8))
+                                    : (isDark ? AppTheme.darkTextMain : const Color(0xFF334155)),
                                 decoration: sub.isCompleted
                                     ? TextDecoration.lineThrough
                                     : null,
@@ -828,7 +898,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                         setState(() => _subtasks.remove(sub));
                       }
                     },
-                    child: const Icon(Icons.close, size: 14, color: Color(0xFFCBD5E1)),
+                    child: Icon(Icons.close, size: 14, color: isDark ? AppTheme.darkTextMuted : const Color(0xFFCBD5E1)),
                   ),
                 ],
               ),
@@ -840,25 +910,25 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
         if (_isAddingSubtask) ...[
           Row(
             children: [
-              const Icon(Icons.add, size: 15, color: AppTheme.marsGreen),
+              Icon(Icons.add, size: 15, color: primaryColor),
               const SizedBox(width: 6),
               Expanded(
                 child: TextField(
                   controller: _subtaskInputController,
                   autofocus: true,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF334155)),
-                  decoration: const InputDecoration(
-                    hintText: '输入子任务名称，按完成键添加',
-                    hintStyle: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                  style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkTextMain : const Color(0xFF334155)),
+                  decoration: InputDecoration(
+                    hintText: strings.addSubtaskHint,
+                    hintStyle: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8)),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
                   ),
                   onSubmitted: (_) => _addSubtaskInline(),
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.check, size: 16, color: AppTheme.marsGreen),
+                icon: Icon(Icons.check, size: 16, color: primaryColor),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 onPressed: _addSubtaskInline,
@@ -868,14 +938,14 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
         ] else ...[
           GestureDetector(
             onTap: () => setState(() => _isAddingSubtask = true),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 4),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
               child: Text(
-                '+ 添加子任务项',
+                '+ ${strings.subtasksLabel}',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.marsGreen,
+                  color: primaryColor,
                 ),
               ),
             ),
@@ -885,37 +955,37 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
     );
   }
 
-  Widget _buildWorkloadSection() {
+  Widget _buildWorkloadSection(bool isDark, Color primaryColor, AppStrings strings) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAF9),
+        color: isDark ? AppTheme.darkBgPage : const Color(0xFFF8FAF9),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFEEF2F5)),
+        border: Border.all(color: isDark ? AppTheme.darkBorder : const Color(0xFFEEF2F5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            '艾利工作量评估',
+          Text(
+            strings.workloadEstimateLabel,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF334155),
+              color: isDark ? AppTheme.darkTextSecondary : const Color(0xFF334155),
             ),
           ),
           Container(
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8ECEF),
+              color: isDark ? AppTheme.darkBgSurface : const Color(0xFFE8ECEF),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _workloadChoiceItem('一般', 'easy'),
-                _workloadChoiceItem('中等难度', 'medium'),
-                _workloadChoiceItem('较高难度', 'hard'),
+                _workloadChoiceItem(strings.workloadEasy, 'easy', isDark, primaryColor),
+                _workloadChoiceItem(strings.workloadMedium, 'medium', isDark, primaryColor),
+                _workloadChoiceItem(strings.workloadHard, 'hard', isDark, primaryColor),
               ],
             ),
           ),
@@ -924,9 +994,9 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
     );
   }
 
-  Widget _workloadChoiceItem(String label, String value) {
+  Widget _workloadChoiceItem(String label, String value, bool isDark, Color primaryColor) {
     final isSelected = _workload == value;
-    Color activeColor = AppTheme.marsGreen;
+    Color activeColor = primaryColor;
     if (value == 'hard') {
       activeColor = const Color(0xFFEF4444); // 珊瑚红 / 艾利高难度红
     }
@@ -945,42 +1015,44 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? Colors.white : const Color(0xFF64748B),
+            color: isSelected
+                ? Colors.white
+                : (isDark ? AppTheme.darkTextMuted : const Color(0xFF64748B)),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildStartFocusButton() {
+  Widget _buildStartFocusButton(bool isDark, Color primaryColor, AppStrings strings) {
     return GestureDetector(
       onTap: _startPomodoroFocus,
       child: Container(
         width: double.infinity,
         height: 46,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF008779), Color(0xFF005C53)],
+          gradient: LinearGradient(
+            colors: [primaryColor, primaryColor.withOpacity(0.8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.marsGreen.withOpacity(0.35),
+              color: primaryColor.withOpacity(0.35),
               blurRadius: 14,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.timer_outlined, size: 18, color: Colors.white),
-            SizedBox(width: 8),
+            const Icon(Icons.timer_outlined, size: 18, color: Colors.white),
+            const SizedBox(width: 8),
             Text(
-              '开始当前任务沉浸专注 (25m)',
-              style: TextStyle(
+              strings.startFocusNowBtn,
+              style: const TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
@@ -993,11 +1065,11 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
     );
   }
 
-  Widget _buildBottomTools() {
+  Widget _buildBottomTools(bool isDark, Color primaryColor, AppStrings strings) {
     return Container(
       padding: const EdgeInsets.only(top: 10),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: isDark ? AppTheme.darkBorder : const Color(0xFFF1F5F9))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1022,28 +1094,30 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _reminderTime != null
-                        ? AppTheme.marsGreen.withOpacity(0.12)
-                        : const Color(0xFFF1F4F6),
+                        ? primaryColor.withOpacity(isDark ? 0.2 : 0.12)
+                        : (isDark ? AppTheme.darkBgPage : const Color(0xFFF1F4F6)),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        _reminderTime != null ? '⏰ $_reminderTime' : '⏰ 提醒',
+                        _reminderTime != null
+                            ? '⏰ $_reminderTime'
+                            : (strings.isZh ? '⏰ 提醒' : '⏰ Reminder'),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: _reminderTime != null
-                              ? AppTheme.marsGreen
-                              : const Color(0xFF64748B),
+                              ? primaryColor
+                              : (isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B)),
                         ),
                       ),
                       if (_reminderTime != null) ...[
                         const SizedBox(width: 4),
                         GestureDetector(
                           onTap: () => setState(() => _reminderTime = null),
-                          child: const Icon(Icons.close, size: 12, color: AppTheme.marsGreen),
+                          child: Icon(Icons.close, size: 12, color: primaryColor),
                         ),
                       ],
                     ],
@@ -1059,8 +1133,8 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _isRepeat
-                        ? AppTheme.marsGreen.withOpacity(0.12)
-                        : const Color(0xFFF1F4F6),
+                        ? primaryColor.withOpacity(isDark ? 0.2 : 0.12)
+                        : (isDark ? AppTheme.darkBgPage : const Color(0xFFF1F4F6)),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Row(
@@ -1069,15 +1143,15 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
                       Icon(
                         Icons.repeat,
                         size: 12,
-                        color: _isRepeat ? AppTheme.marsGreen : const Color(0xFF64748B),
+                        color: _isRepeat ? primaryColor : (isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B)),
                       ),
                       const SizedBox(width: 3),
                       Text(
-                        '重复',
+                        strings.isZh ? '重复' : 'Repeat',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: _isRepeat ? AppTheme.marsGreen : const Color(0xFF64748B),
+                          color: _isRepeat ? primaryColor : (isDark ? AppTheme.darkTextSecondary : const Color(0xFF64748B)),
                         ),
                       ),
                     ],
@@ -1089,7 +1163,7 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
 
           // 更多操作
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_horiz, size: 20, color: Color(0xFF94A3B8)),
+            icon: Icon(Icons.more_horiz, size: 20, color: isDark ? AppTheme.darkTextMuted : const Color(0xFF94A3B8)),
             padding: EdgeInsets.zero,
             onSelected: (val) async {
               if (val == 'delete' && widget.task != null) {
@@ -1100,13 +1174,13 @@ class _TaskDetailSheetState extends State<TaskDetailSheet> {
             },
             itemBuilder: (ctx) => [
               if (widget.task != null)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete_outline, size: 16, color: Colors.redAccent),
-                      SizedBox(width: 8),
-                      Text('删除此任务', style: TextStyle(color: Colors.redAccent, fontSize: 13)),
+                      const Icon(Icons.delete_outline, size: 16, color: Colors.redAccent),
+                      const SizedBox(width: 8),
+                      Text(strings.deleteBtn, style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
                     ],
                   ),
                 ),

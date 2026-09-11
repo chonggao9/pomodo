@@ -247,7 +247,84 @@ class DatabaseHelper {
     );
   }
 
+  /// 一次性聚合查询所有任务的子任务进度，杜绝 N+1 查询
+  Future<Map<String, ({int total, int completed})>> getSubtaskProgressSummary() async {
+    final db = await instance.database;
+    final result = await db.rawQuery('''
+      SELECT task_id,
+             COUNT(*) as total_count,
+             SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) as done_count
+      FROM subtasks
+      GROUP BY task_id
+    ''');
+    final map = <String, ({int total, int completed})>{};
+    for (final row in result) {
+      final taskId = row['task_id'] as String?;
+      if (taskId != null) {
+        map[taskId] = (
+          total: (row['total_count'] as int?) ?? 0,
+          completed: (row['done_count'] as int?) ?? 0,
+        );
+      }
+    }
+    return map;
+  }
+
+  /// 获取指定任务关联的全部番茄专注记录 ID（用于删除撤销恢复时重连）
+  Future<List<String>> getSessionIdsForTask(String taskId) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'pomodoro_sessions',
+      columns: ['id'],
+      where: 'task_id = ?',
+      whereArgs: [taskId],
+    );
+    return result.map((r) => r['id'] as String).toList();
+  }
+
+  /// 恢复误删的任务及其子任务（供左滑删除撤销功能使用），并自动重连历史番茄流水
+  Future<void> restoreTask(Task task, List<Subtask> subtasks, [List<String>? linkedSessionIds]) async {
+    final db = await instance.database;
+    await db.transaction((txn) async {
+      await txn.insert('tasks', task.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      for (final sub in subtasks) {
+        await txn.insert('subtasks', sub.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+      if (linkedSessionIds != null && linkedSessionIds.isNotEmpty) {
+        final placeholders = List.filled(linkedSessionIds.length, '?').join(',');
+        await txn.rawUpdate(
+          'UPDATE pomodoro_sessions SET task_id = ? WHERE id IN ($placeholders)',
+          [task.id, ...linkedSessionIds],
+        );
+      }
+    });
+  }
+
   // === Pomodoro Sessions ===
+  /// 一次性聚合查询所有任务关联的已完成番茄专注次数与总时长，杜绝 N+1 查询
+  Future<Map<String, ({int count, int minutes})>> getTaskPomoSummary() async {
+    final db = await instance.database;
+    final result = await db.rawQuery('''
+      SELECT task_id,
+             COUNT(*) as pomo_count,
+             SUM(duration_minutes) as total_minutes
+      FROM pomodoro_sessions
+      WHERE task_id IS NOT NULL AND status = 'completed'
+      GROUP BY task_id
+    ''');
+    final map = <String, ({int count, int minutes})>{};
+    for (final row in result) {
+      final taskId = row['task_id'] as String?;
+      if (taskId != null) {
+        map[taskId] = (
+          count: (row['pomo_count'] as int?) ?? 0,
+          minutes: (row['total_minutes'] as int?) ?? 0,
+        );
+      }
+    }
+    return map;
+  }
+
   Future<List<PomodoroSession>> getAllSessions() async {
     final db = await instance.database;
     final result = await db.query('pomodoro_sessions', orderBy: 'started_at DESC');

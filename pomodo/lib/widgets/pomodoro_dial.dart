@@ -20,6 +20,10 @@ class PomodoroDial extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenW = MediaQuery.of(context).size.width;
     final dialSize = min(screenW * 0.62, 240.0);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final locale = Localizations.localeOf(context);
+    final isZh = locale.languageCode.toLowerCase() == 'zh';
 
     return GestureDetector(
       onTap: onTap,
@@ -29,15 +33,15 @@ class PomodoroDial extends StatelessWidget {
           height: dialSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
+            color: isDark ? AppTheme.darkBgSurface : Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: isDark ? Colors.black.withOpacity(0.35) : Colors.black.withOpacity(0.06),
                 blurRadius: 24,
                 offset: const Offset(0, 12),
               ),
               BoxShadow(
-                color: AppTheme.marsGreen.withOpacity(isRunning ? 0.12 : 0.03),
+                color: primaryColor.withOpacity(isRunning ? 0.18 : (isDark ? 0.0 : 0.03)),
                 blurRadius: 32,
                 spreadRadius: isRunning ? 3 : 0,
               ),
@@ -51,9 +55,16 @@ class PomodoroDial extends StatelessWidget {
                 size: Size(dialSize, dialSize),
                 painter: _DieterRamsDialPainter(
                   progress: progress,
-                  accentColor: AppTheme.marsGreen,
-                  tickColor: Colors.black.withOpacity(0.12),
-                  majorTickColor: Colors.black.withOpacity(0.35),
+                  accentColor: primaryColor,
+                  tickColor: isDark
+                      ? Colors.white.withOpacity(0.12)
+                      : Colors.black.withOpacity(0.12),
+                  majorTickColor: isDark
+                      ? Colors.white.withOpacity(0.35)
+                      : Colors.black.withOpacity(0.35),
+                  bgTrackColor: isDark
+                      ? Colors.white.withOpacity(0.06)
+                      : Colors.black.withOpacity(0.04),
                 ),
               ),
 
@@ -68,11 +79,13 @@ class PomodoroDial extends StatelessWidget {
                     height: 8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isRunning ? AppTheme.marsGreen : Colors.black26,
+                      color: isRunning
+                          ? primaryColor
+                          : (isDark ? Colors.white24 : Colors.black26),
                       boxShadow: isRunning
                           ? [
                               BoxShadow(
-                                color: AppTheme.marsGreen.withOpacity(0.5),
+                                color: primaryColor.withOpacity(0.5),
                                 blurRadius: 8,
                                 spreadRadius: 2,
                               )
@@ -85,12 +98,12 @@ class PomodoroDial extends StatelessWidget {
                   // 倒计时数字
                   Text(
                     formattedTime,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -1.5,
-                      color: AppTheme.textPrimary,
-                      fontFeatures: [
+                      color: isDark ? AppTheme.darkTextMain : const Color(0xFF0F172A),
+                      fontFeatures: const [
                         FontFeature.tabularFigures(),
                       ],
                     ),
@@ -99,11 +112,15 @@ class PomodoroDial extends StatelessWidget {
 
                   // 提示文本
                   Text(
-                    isRunning ? '保持纯粹专注' : '点击或按开始',
+                    isRunning
+                        ? (isZh ? '保持纯粹专注' : 'Stay Focused')
+                        : (isZh ? '点击或按开始' : 'Tap to Start'),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: isRunning ? AppTheme.marsGreen : AppTheme.textMuted,
+                      color: isRunning
+                          ? primaryColor
+                          : (isDark ? AppTheme.darkTextMuted : AppTheme.textMuted),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -122,12 +139,14 @@ class _DieterRamsDialPainter extends CustomPainter {
   final Color accentColor;
   final Color tickColor;
   final Color majorTickColor;
+  final Color bgTrackColor;
 
   _DieterRamsDialPainter({
     required this.progress,
     required this.accentColor,
     required this.tickColor,
     required this.majorTickColor,
+    required this.bgTrackColor,
   });
 
   @override
@@ -157,12 +176,12 @@ class _DieterRamsDialPainter extends CustomPainter {
       canvas.drawLine(Offset(startX, startY), Offset(endX, endY), tickPaint);
     }
 
-    // 2. 绘制马尔斯绿动态倒计时圆弧 (从 -90度 顺时针旋转)
+    // 2. 绘制动态倒计时圆弧 (从 -90度 顺时针旋转)
     final arcRect = Rect.fromCircle(center: center, radius: radius - 16);
 
     // 背景底轨
     final bgArcPaint = Paint()
-      ..color = Colors.black.withOpacity(0.04)
+      ..color = bgTrackColor
       ..strokeWidth = 6.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
